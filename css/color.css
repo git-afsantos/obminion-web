@@ -1,0 +1,94 @@
+html, body {
+    color: #333;
+    background-color: #333;
+}
+
+
+#app {
+    background-color: white;
+}
+
+.bg-light-grey {
+    background-color: lightgrey;
+}
+
+.bg-grey {
+    background-color: grey;
+}
+
+.app-header {
+    border-bottom-color: #333;
+    background-color: #eee;
+    color: #333;
+}
+
+#battle-scene .portrait,
+#battle-scene .portrait-sm,
+#battle-scene .icon,
+#battle-scene .label,
+#battle-scene .icon-unit,
+#battle-scene .adornment {
+    background-color: whitesmoke;
+    border-color: #333;
+}
+
+#battle-scene .icon-unit.disabled {
+    background-color: darkgray;
+}
+
+
+#battle-scene .action-button,
+#battle-scene .action-button.disabled:hover,
+#battle-scene #battle-button-attack.disabled:hover,
+#battle-scene #battle-button-rotate-cw.disabled:hover,
+#battle-scene #battle-button-rotate-ccw.disabled:hover,
+#battle-scene .disabled .action-button:hover,
+#battle-scene .disabled #battle-button-attack:hover,
+#battle-scene .disabled #battle-button-rotate-cw:hover,
+#battle-scene .disabled #battle-button-rotate-ccw:hover
+{
+    background-color: lightgray;
+}
+
+#battle-scene .action-button:hover {
+    background-color: ivory;
+}
+
+
+
+.board li.notification {
+    background-color: #333;
+    color: white;
+}
+
+
+.battle-scene .overlay {
+    background-color: white;
+    color: #333;
+}
+
+.battle-scene .portrait .overlay,
+.battle-scene .portrait-sm .overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+}
+
+.battle-scene .portrait .overlay.red,
+.battle-scene .portrait-sm .overlay.red {
+    background-color: rgba(255, 32, 32, 0.6);
+}
+
+.battle-scene .portrait .overlay.green,
+.battle-scene .portrait-sm .overlay.green {
+    background-color: rgba(32, 128, 32, 0.6);
+}
+
+.battle-scene > .status {
+    background-color: #666;
+    color: white;
+    border-top-color: #333;
+}
+
+.label .overlay {
+    background-color: rgba(255, 215, 0, 0.25);
+}

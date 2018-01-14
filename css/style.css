@@ -1,0 +1,775 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+
+.invisible {
+    opacity: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+
+.clickable {
+    cursor: pointer;
+}
+
+
+.anchor {
+    position: relative;
+}
+
+
+.no-padding {
+    padding: 0;
+}
+
+.padding {
+    padding: 0.5em;
+}
+
+.padding-v {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.padding-v-lg {
+    padding: 0.75em 0;
+}
+
+.padding-top-sm {
+    padding-top: 0.25em;
+}
+
+.padding-top {
+    padding-top: 0.5em;
+}
+
+.padding-top-lg {
+    padding-top: 0.75em;
+}
+
+.padding-bottom-sm {
+    padding-bottom: 0.25em;
+}
+
+.padding-bottom {
+    padding-bottom: 0.5em;
+}
+
+.padding-bottom-lg {
+    padding-bottom: 0.75em;
+}
+
+
+.margin-top {
+    margin-top: 0.5em;
+}
+
+.margin-bottom {
+    margin-bottom: 0.5em;
+}
+
+.margin-left {
+    margin-left: 0.5em;
+}
+
+.margin-left-sm {
+    margin-left: 0.25em;
+}
+
+.margin-right {
+    margin-right: 0.5em;
+}
+
+.margin-right-sm {
+    margin-right: 0.25em;
+}
+
+.border-top {
+    border-top: 1px solid;
+}
+
+.border-top-lg {
+    border-top: 2px solid;
+}
+
+.border-bottom {
+    border-bottom: 1px solid;
+}
+
+.border-bottom-lg {
+    border-bottom: 2px solid;
+}
+
+
+.pull-left {
+    float: left;
+}
+
+.pull-right {
+    float: right;
+}
+
+
+.inline {
+    display: inline-block;
+}
+
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+}
+
+
+
+#battle-scene {
+    position: relative;
+    height: 100%;
+}
+
+#battle-scene > .player-panel {
+    position: relative;
+    height: 35%;
+    min-height: 144px;
+    padding: 0 1em;
+}
+
+#battle-scene > .action-bar {
+    position: absolute;
+    bottom: 2em;
+    right: 2em;
+    padding-top: 1em;
+    text-align: center;
+}
+
+@media (min-height: 480px) {
+    #battle-scene > .action-bar {
+        top: 70%;
+        bottom: auto;
+        left: 0;
+        right: 0;
+    }
+}
+
+
+
+.portrait-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.portrait {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 50%;
+/*
+    background-position: center;
+    background-size: cover;
+*/
+}
+
+.portrait > img {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+
+.portrait-wrapper > .icon-unit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 48px;
+    height: 48px;
+    margin-top: -25px;
+    margin-left: -25px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 50%;
+/*
+    background-position: center;
+    background-size: cover;
+*/
+}
+
+.portrait-wrapper > .icon-unit > img {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+
+.player-panel.mirrored .portrait-wrapper > .pos-2-4 {
+    transform: rotate(240deg) translate(64px) rotate(-240deg);
+}
+
+.player-panel.mirrored .portrait-wrapper > .pos-3-4 {
+    transform: rotate(315deg) translate(64px) rotate(-315deg);
+}
+
+.player-panel.mirrored .portrait-wrapper > .pos-4-4 {
+    transform: rotate(30deg) translate(62px) rotate(-30deg);
+}
+
+.player-panel .portrait-wrapper > .pos-2-4 {
+    transform: rotate(60deg) translate(62px) rotate(-60deg);
+}
+
+.player-panel .portrait-wrapper > .pos-3-4 {
+    transform: rotate(135deg) translate(64px) rotate(-135deg);
+}
+
+.player-panel .portrait-wrapper > .pos-4-4 {
+    transform: rotate(210deg) translate(64px) rotate(-210deg);
+}
+
+
+.portrait > .adornment {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    margin-top: -13px;
+    margin-left: -13px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+    background-position: center;
+    background-size: cover;
+}
+
+.player-panel.mirrored .portrait > .adornment.indicator-type {
+    transform: rotate(160deg) translate(54px) rotate(-160deg);
+}
+
+.player-panel.mirrored .portrait > .adornment.indicator-level {
+    transform: rotate(110deg) translate(54px) rotate(-110deg);
+}
+
+.player-panel .portrait > .adornment.indicator-type {
+    transform: rotate(290deg) translate(54px) rotate(-290deg);
+}
+
+.player-panel .portrait > .adornment.indicator-level {
+    transform: rotate(340deg) translate(54px) rotate(-340deg);
+}
+
+
+.player-panel > .portrait-wrapper {
+    position: absolute;
+    left: 40px;
+    bottom: 40px;
+}
+
+.player-panel.mirrored > .portrait-wrapper {
+    position: absolute;
+    top: 40px;
+    left: auto;
+    right: 40px;
+    bottom: auto;
+}
+
+
+
+.nameplate {
+    position: relative;
+    font-weight: bold;
+}
+
+.nameplate > .unit-name {
+    margin: 0;
+}
+
+.player-panel > .nameplate {
+    position: absolute;
+    left: 160px;
+    right: 1em;
+    bottom: 56px;
+    border-style: solid;
+    border-top: none;
+    border-bottom-width: 0.5em;
+    border-left: 0.75em solid transparent;
+    border-right: none;
+}
+
+.player-panel > .nameplate > .progress-bar {
+    top: 0.25em;
+}
+
+.player-panel.mirrored > .nameplate {
+    position: absolute;
+    top: 40px;
+    left: 1em;
+    right: 160px;
+    bottom: auto;
+    border-right: 0.75em solid transparent;
+    border-left: none;
+}
+
+
+
+
+@media (min-width: 640px) {
+    .portrait-wrapper {
+        width: 136px;
+        height: 136px;
+    }
+
+    .portrait {
+        width: 128px;
+        height: 128px;
+        border-width: 4px;
+    }
+
+    .portrait-wrapper > .icon-unit {
+        width: 64px;
+        height: 64px;
+        margin-top: -33px;  /* +1 for border */
+        margin-left: -33px;
+    }
+
+    .player-panel.mirrored .portrait-wrapper > .pos-2-4 {
+        transform: rotate(240deg) translate(92px) rotate(-240deg);
+    }
+
+    .player-panel.mirrored .portrait-wrapper > .pos-3-4 {
+        transform: rotate(315deg) translate(90px) rotate(-315deg);
+    }
+
+    .player-panel.mirrored .portrait-wrapper > .pos-4-4 {
+        transform: rotate(30deg) translate(88px) rotate(-30deg);
+    }
+
+    .player-panel .portrait-wrapper > .pos-2-4 {
+        transform: rotate(60deg) translate(88px) rotate(-60deg);
+    }
+
+    .player-panel .portrait-wrapper > .pos-3-4 {
+        transform: rotate(135deg) translate(90px) rotate(-135deg);
+    }
+
+    .player-panel .portrait-wrapper > .pos-4-4 {
+        transform: rotate(210deg) translate(92px) rotate(-210deg);
+    }
+
+
+    .portrait > .adornment {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 1.25em;
+        margin-top: -17px;
+        margin-left: -17px;
+    }
+
+    .player-panel.mirrored .portrait > .adornment.indicator-type {
+        transform: rotate(160deg) translate(72px) rotate(-160deg);
+    }
+
+    .player-panel.mirrored .portrait > .adornment.indicator-level {
+        transform: rotate(110deg) translate(72px) rotate(-110deg);
+    }
+
+    .player-panel .portrait > .adornment.indicator-type {
+        transform: rotate(290deg) translate(72px) rotate(-290deg);
+    }
+
+    .player-panel .portrait > .adornment.indicator-level {
+        transform: rotate(340deg) translate(72px) rotate(-340deg);
+    }
+
+
+    .player-panel > .portrait-wrapper {
+        left: 56px;
+        bottom: 56px;
+    }
+
+    .player-panel.mirrored > .portrait-wrapper {
+        top: 56px;
+        right: 56px;
+    }
+
+
+    .player-panel > .nameplate {
+        left: 220px;
+        bottom: 92px;
+    }
+
+    .player-panel.mirrored > .nameplate {
+        top: 64px;
+        right: 220px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+.progress-bar {
+    position: relative;
+    min-height: 1em;
+    border: 1px solid;
+    border-radius: 6px;
+    background-color: whitesmoke;
+    overflow: hidden;
+}
+
+.progress-bar > .progress {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    background-color: limegreen;
+}
+
+.progress-bar > .progress-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    font-weight: bold;
+    z-index: 200;
+}
+
+
+
+
+
+
+
+
+
+/*
+
+#battle-scene > .header > div:first-child {
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+}
+
+#battle-scene > .header .center-panel {
+    display: inline-block;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-width: 0 2px 2px 2px;
+    border-style: solid;
+    padding: 0 2em;
+}
+
+
+
+#battle-area {
+    position: relative;
+}
+
+#battle-area .circle {
+    position: relative;
+    width: 192px;
+    height: 192px;
+    border-radius: 50%;
+    border-width: 2px;
+    border-style: solid;
+    margin: 2em auto 0 auto;
+    background-position: center;
+    background-size: cover;
+}
+
+#battle-area .circle > .unit,
+.action-bar.round > .action-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 64px;
+    height: 64px;
+    margin-left: -32px;
+    margin-top: -32px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 50%;
+}
+
+#battle-area .circle > .unit.pos-1-4 {
+    width: 128px;
+    height: 128px;
+    margin-left: -64px;
+    margin-top: -64px;
+}
+
+.circle > .pos-1-4,
+.circle.mirror > .pos-3-4 {
+    transform: rotate(0deg) translate(96px) rotate(0deg);
+}
+
+.circle > .pos-2-4,
+.circle.mirror > .pos-4-4 {
+    transform: rotate(90deg) translate(96px) rotate(-90deg);
+}
+
+.circle > .pos-3-4,
+.circle.mirror > .pos-1-4 {
+    transform: rotate(180deg) translate(96px) rotate(-180deg);
+}
+
+.circle > .pos-4-4,
+.circle.mirror > .pos-2-4 {
+    transform: rotate(270deg) translate(96px) rotate(-270deg);
+}
+
+
+
+.action-button {
+    cursor: pointer;
+}
+
+.action-bar.disabled,
+.disabled .action-button,
+.action-button.disabled {
+    cursor: not-allowed;
+}
+
+.action-bar.round {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border-width: 2px;
+    border-style: solid;
+    margin: -2em auto 0 auto;
+}
+
+.action-bar.round > .pos-center {
+    width: 96px;
+    height: 96px;
+    margin-left: -48px;
+    margin-top: -48px;
+}
+
+.action-bar.round > .pos-1-3 {
+    transform: rotate(270deg) translate(90px) rotate(-270deg);
+}
+
+.action-bar.round > .pos-2-3 {
+    transform: rotate(150deg) translate(90px) rotate(-150deg);
+}
+
+.action-bar.round > .pos-3-3 {
+    transform: rotate(30deg) translate(90px) rotate(-30deg);
+}
+
+
+
+
+#battle-scene .board {
+    margin-top: 2em;
+}
+
+.board > ul {
+    margin: 0 0.5em;
+    padding: 0 0.5em;
+}
+
+.board li.notification {
+    list-style: none;
+    height: 0;
+    line-height: 2em;
+    margin: 0;
+    padding: 0 0.5em;
+    overflow: hidden;
+    opacity: 0;
+    border-radius: 4px;
+}
+
+#battle-scene li.notification.show {
+    height: 2em;
+    margin: 2px 0;
+    opacity: 1;
+}
+
+
+
+
+.battle-scene .overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+}
+
+.battle-scene .player-area {
+    height: 12em;
+}
+
+.battle-scene .player-area > .status {
+    position: relative;
+    max-height: 2em;
+}
+
+.battle-scene .player-area > .status .team-size {
+    display: inline-block;
+    position: relative;
+    border-radius: 4px;
+    border: 2px solid;
+    padding: 0 4px;
+}
+
+.battle-scene .player-area > .status h3,
+.battle-scene .player-area > .status h4 {
+    margin: 0;
+}
+
+.battle-scene .player-area > .team-area {
+    height: 75%;
+}
+
+.battle-scene .player-area > .team-area > .unit-area {
+    height: 100%;
+    position: relative;
+}
+
+.battle-scene .player-area > .team-area > .unit-area > .unit-panel {
+    position: absolute;
+    top: 0;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+}
+
+.battle-scene .player-area > .team-area > .unit-area > .unit-panel.align-bottom {
+    top: auto;
+    bottom: 0;
+}
+
+
+
+
+#battle-scene .portrait-sm {
+    display: inline-block;
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
+}
+
+.battle-scene > .status {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 6px;
+    border-top-width: 2px;
+    border-top-style: solid;
+}
+
+
+.battle-scene .icon-button-lg {
+    font-size: 2em;
+    line-height: 1.5em;
+}
+
+.battle-scene .icon-button-xl {
+    font-size: 4em;
+    line-height: 1.5em;
+}
+
+
+.battle-scene .unit-card h4,
+.battle-scene .unit-card p {
+    margin: 0;
+}
+
+
+
+.icon {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 4px;
+}
+
+
+.label {
+    border-radius: 4px;
+    border-width: 1px;
+    border-style: solid;
+    font-weight: bold;
+    padding: 0 2px;
+}
+
+h1.label, h2.label, h3.label, h4.label {
+    display: inline;
+    margin: 0;
+}
+
+h1.label, h2.label, h3.label {
+    border-width: 2px;
+    border-radius: 8px;
+}
+
+
+*/
+
+
+
+.decoration.arrow {
+    position: relative;
+    min-height: 1px;
+    border-top-width: 1px;
+    border-top-style: solid;
+    overflow: hidden;
+}
+
+.decoration.arrow > .arrowhead.pull-left {
+    width: 0;
+    height: 0; 
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent; 
+    border-right-width: 10px;
+    border-right-style: solid;
+}
+
+.decoration.arrow > .arrowhead.pull-right {
+    width: 0;
+    height: 0; 
+    border-bottom: 8px solid transparent; 
+    border-left-width: 32px;
+    border-left-style: solid;
+}
+
+
