@@ -60,23 +60,29 @@ to functions of the animation manager, by this script.
         */
 
 
-
-        /*
-        - create units and teams (normal and battle)
-        - battle engine is already created
-        - create views
-        - assign battle engine to battle view
-        - when battle starts, assign each team to each team view
-        */
-
-
-        //Game.data.species = new Game.Models.SpeciesCollection();
+        Game.data.species = new Game.Models.SpeciesCollection();
         Game.data.instances = new Game.Models.UnitTeam();
-        //Game.data.abilities = new Game.Models.AbilityCollection();
+        Game.data.abilities = new Game.Models.AbilityCollection();
+
+        Game.preloader = new Game.Views.Preloader({
+            el: $("#preloader"),
+            model: BattleEngine,
+            species: Game.data.species,
+            abilities: Game.data.abilities
+        });
+
         view = new Views.BattleArea({model: BattleEngine});
-        window.setTimeout(function () {
+
+        // $(window).resize(_.debounce(onResize, 100));
+        Backbone.history.start();
+        //BattleEngine.trigger("request", BattleEngine);
+        Game.data.species.fetch();
+        Game.data.abilities.fetch();
+        //BattleEngine.trigger("sync", BattleEngine);
+
+        $("#start-button").on("click", function () {
             createBattle(BattleEngine);
-        }, 500);
+        });
     });
 
 

@@ -1,0 +1,11 @@
+[{
+    "id": 1,
+    "name": "Test Ability",
+    "description": "Does nothing special.",
+    "effects": [{
+        "mechanic": "log",
+        "events": ["friend:others battleunit:defend"],
+        "targets": [],
+        "parameters": {}
+    }]
+}]

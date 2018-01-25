@@ -18,7 +18,9 @@
     models.UnitTemplate = Backbone.Model.extend({});
 
     models.SpeciesCollection = Backbone.Collection.extend({
-        model: models.UnitTemplate
+        model: models.UnitTemplate,
+
+        url: "data/species.json"
     });
 
 
@@ -306,7 +308,9 @@
     models.AbilityTemplate = Backbone.Model.extend({});
 
     models.AbilityCollection = Backbone.Collection.extend({
-        model: models.AbilityTemplate
+        model: models.AbilityTemplate,
+
+        url: "data/abilities.json"
     });
 
 
