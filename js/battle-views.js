@@ -410,9 +410,12 @@
     // the model is the battle engine
     views.BattleArea = views.BaseView.extend({
         el: "#battle-scene",
+        navOptions: { trigger: true, replace: true },
 
-        initialize: function (args) {
-            _.bindAll(this, "_nextStep", "_setAction");
+        initialize: function (options) {
+            _.bindAll(this, "_nextStep", "_setAction", "leave");
+            this.router = options.router;
+            this.state = options.state;
             this.animationQueue = [];
             this.animating = 0;
             this.animationCallback = null;
@@ -451,7 +454,7 @@
         },
 
         onBattleEnd: function () {
-            this.animationCallback = this.hide;
+            this.animationCallback = this.dismiss;
         },
 
         onRequestAction: function () {
@@ -517,6 +520,14 @@
             }
         },
 
+        dismiss: function () {
+            window.setTimeout(this.leave);
+        },
+
+        leave: function () {
+            this.state.set("status", "idle");
+            this.router.navigate("home", this.navOptions);
+        },
 
 
         _setAction: function () {

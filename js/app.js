@@ -67,15 +67,6 @@ to functions of the animation manager, by this script.
         Game.data.instances = new Game.Models.UnitTeam();
         Game.data.abilities = new Game.Models.AbilityCollection();
 
-        Game.preloader = new Game.Views.Preloader({
-            el: $("#preloader"),
-            model: Game.BattleEngine,
-            species: Game.data.species,
-            abilities: Game.data.abilities
-        });
-
-        
-
         bootstrapViews();
 
         // $(window).resize(_.debounce(onResize, 100));
@@ -94,6 +85,12 @@ to functions of the animation manager, by this script.
 
 
     function bootstrapViews() {
+        Game.preloader = new Game.Views.Preloader({
+            el: $("#preloader"),
+            model: Game.BattleEngine,
+            species: Game.data.species,
+            abilities: Game.data.abilities
+        });
         Game.startView = new Game.Views.BaseView({
             el: $("#start-screen")
         });
@@ -102,7 +99,9 @@ to functions of the animation manager, by this script.
         });
         Game.battleView = new Game.Views.BattleArea({
             el: $("#battle-scene"),
-            model: Game.BattleEngine
+            model: Game.BattleEngine,
+            router: Game.router,
+            state: Game.state
         });
         Game.teamView = new Game.Views.BaseView({
             el: $("#team-menu")
