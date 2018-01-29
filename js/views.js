@@ -40,13 +40,11 @@
         },
 
         onRequest: function (model_or_collection, xhr, options) {
-            console.log("loading");
             ++this.loading;
             if (this.loading === 1) this.$el.show();
         },
 
         onSync: function (model_or_collection, response, options) {
-            console.log("loading complete");
             --this.loading;
             if (this.loading === 0) this.$el.hide();
         }

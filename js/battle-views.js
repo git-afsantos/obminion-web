@@ -6,7 +6,7 @@
 
     views.BattleActionBar = Backbone.View.extend({
         id:         "battle-action-bar",
-        className:  "action-bar round",
+        className:  "action-bar",
 
         events: {
             "click #battle-button-attack":      "onAttack",
@@ -283,9 +283,11 @@
         onAnimationEnd: function (e) {
             var f;
             --this.animating;
+            console.log("onAnimationEnd", this.animating);
             if (this.animating === 0) {
                 f = this.animationCallback;
                 if (f != null) {
+                    console.log("  > calling callback");
                     f.call(this);
                     if (this.animationCallback === f) this.animationCallback = null;
                 } else {
@@ -359,15 +361,17 @@
         animateDeath: function (i) {
             console.log("animateDeath", i);
             var _this = this;
-            this.animating = 1;
+            ++this.animating;
             this.portraits[i].addClass("animate-death");
             this.animationCallback = function () {
                 console.log("cleanDeath");
-                _this.animating = 1;
-                _this.portraits[i].removeClass("animate-death")
-                    .addClass("invisible transition-opacity");
-                _this.animationCallback = _this.animateFadeIn;
-                window.setTimeout(_this.onAnimationEnd);
+                _this.portraits[i].removeClass("animate-death");
+                _this.animateRotationOut();
+                if (this.animating === 0) {
+                    // special case when the team was just defeated
+                    this.animating = 1;
+                    window.setTimeout(this.onAnimationEnd);
+                }
             };
         },
 
@@ -376,8 +380,8 @@
             var i = this.portraits.length;
             this.animating = 0;
             while (i--) {
-                this.portraits[i].removeClass("invisible");
                 if (this.collection.at(i) != null) ++this.animating;
+                this.portraits[i].removeClass("invisible");
             }
             this._renderActiveUnit();
             this._renderTeamUnits();

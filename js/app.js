@@ -160,6 +160,11 @@ to functions of the animation manager, by this script.
                 id: idGen++,
                 template: 1,
                 level: 1
+            },
+            {
+                id: idGen++,
+                template: 1,
+                level: 1
             }
         ]);
     }
