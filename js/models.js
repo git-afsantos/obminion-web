@@ -5,6 +5,9 @@
         gameData = window.Game.data;
 
 
+    models.GameState = Backbone.Model.extend({});
+
+
     /*{
         id,
         portrait,

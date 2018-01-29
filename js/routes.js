@@ -3,6 +3,8 @@
     "use strict";
     var Game = window.Game,
         Router = Backbone.Router.extend({
+            navOptions: { trigger: true, replace: true },
+
             routes: {
                 "":                 "start",
                 "home":             "home",
@@ -12,31 +14,34 @@
             },
 
             start: function() {
-                Game.state = "start";
-                // Game.router.navigate("home", { trigger: true });
+                Game.state.set("status", "idle");
+                if (Game.board != null) Game.board.hide();
+                Game.startView.show().build();
+                Game.board = Game.startView;
             },
 
             home: function() {
-                if (Game.state != "home") {
-                    // handle transition
-                }
-                Game.state = "home";
+                if (Game.state.get("status") !== "idle")
+                    return Game.router.navigate("", this.navOptions);
+                if (Game.board != null) Game.board.hide();
+                Game.mainView.show().build();
+                Game.board = Game.mainView;
             },
 
             battle: function() {
+                if (Game.state.get("status") !== "battle")
+                    return Game.router.navigate("", this.navOptions);
                 if (Game.board != null) Game.board.hide();
-                // Game.navigation.goTo("dashboard");
-                // Game.dashboard.show().build(Game.project);
-                // Game.board = Game.dashboard;
+                Game.battleView.show().build();
+                Game.board = Game.battleView;
             },
 
             research: function(what) {
-                if (Game.project == null)
-                    return Game.router.navigate("", { trigger: true });
+                if (Game.state.get("status") !== "idle")
+                    return Game.router.navigate("", this.navOptions);
                 if (Game.board != null) Game.board.hide();
-                // Game.navigation.goTo("issues");
-                // Game.issueBoard.show().build(Game.project, pkg, page);
-                // Game.board = Game.issueBoard;
+                Game.researchView.show().build();
+                Game.board = Game.researchView;
             }
         });
     Game.router = new Router();

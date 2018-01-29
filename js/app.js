@@ -30,15 +30,18 @@ to functions of the animation manager, by this script.
             abilities: null
         },
         Models: {},
-        Views: {}
+        Views: {},
+        state: null,
+        board: null,
+        startView: null,
+        mainView: null,
+        battleView: null,
+        teamView: null,
+        researchView: null
     };
     Game = window.Game;
 
     $(document).ready(function () {
-        var view,
-            BattleEngine = Game.BattleEngine,
-            Views = Game.Views;
-
         delete window.Game;
         
         /*
@@ -59,19 +62,21 @@ to functions of the animation manager, by this script.
         });
         */
 
-
+        Game.state = new Game.Models.GameState();
         Game.data.species = new Game.Models.SpeciesCollection();
         Game.data.instances = new Game.Models.UnitTeam();
         Game.data.abilities = new Game.Models.AbilityCollection();
 
         Game.preloader = new Game.Views.Preloader({
             el: $("#preloader"),
-            model: BattleEngine,
+            model: Game.BattleEngine,
             species: Game.data.species,
             abilities: Game.data.abilities
         });
 
-        view = new Views.BattleArea({model: BattleEngine});
+        
+
+        bootstrapViews();
 
         // $(window).resize(_.debounce(onResize, 100));
         Backbone.history.start();
@@ -81,9 +86,35 @@ to functions of the animation manager, by this script.
         //BattleEngine.trigger("sync", BattleEngine);
 
         $("#start-button").on("click", function () {
-            createBattle(BattleEngine);
+            Game.state.set("status", "battle");
+            Game.router.navigate("battle", { trigger: true, replace: true });
+            createBattle(Game.BattleEngine);
         });
     });
+
+
+    function bootstrapViews() {
+        Game.startView = new Game.Views.BaseView({
+            el: $("#start-screen")
+        });
+        Game.mainView = new Game.Views.BaseView({
+            el: $("#main-menu")
+        });
+        Game.battleView = new Game.Views.BattleArea({
+            el: $("#battle-scene"),
+            model: Game.BattleEngine
+        });
+        Game.teamView = new Game.Views.BaseView({
+            el: $("#team-menu")
+        });
+        Game.researchView = new Game.Views.BaseView({
+            el: $("#research-menu")
+        });
+        Game.mainView.hide();
+        Game.battleView.hide();
+        Game.teamView.hide();
+        Game.researchView.hide();
+    }
 
 
     function createBattle(engine) {

@@ -404,7 +404,7 @@
     ////////////////////////////////////////////////////////////////////////////
 
     // the model is the battle engine
-    views.BattleArea = Backbone.View.extend({
+    views.BattleArea = views.BaseView.extend({
         el: "#battle-scene",
 
         initialize: function (args) {
@@ -447,7 +447,7 @@
         },
 
         onBattleEnd: function () {
-            this.animationCallback = this._hide;
+            this.animationCallback = this.hide;
         },
 
         onRequestAction: function () {
@@ -530,10 +530,6 @@
 
         _showActionBar: function () {
             this.actionBar.show();
-        },
-
-        _hide: function () {
-            this.$el.hide();
         }
     });
 })();

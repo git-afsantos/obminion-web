@@ -342,7 +342,7 @@ html, body {
 
 
 
-@media (min-width: 640px) {
+@media (min-width: 640px) and (min-height: 480px) {
     .portrait-wrapper {
         width: 136px;
         height: 136px;
