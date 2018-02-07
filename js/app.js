@@ -21,7 +21,8 @@ to functions of the animation manager, by this script.
 
 (function () {
     "use strict";
-    var idGen = 1, Game;
+    /* global window:false, Backbone:false, $:false, document:false */
+    var Game;
 
     window.Game = {
         data: {
@@ -77,9 +78,8 @@ to functions of the animation manager, by this script.
         //BattleEngine.trigger("sync", BattleEngine);
 
         $("#start-button").on("click", function () {
-            Game.state.set("status", "battle");
-            Game.router.navigate("battle", { trigger: true, replace: true });
-            createBattle(Game.BattleEngine);
+            Game.state.set("status", "idle");
+            Game.router.navigate("home", { trigger: true, replace: true });
         });
     });
 
@@ -94,8 +94,10 @@ to functions of the animation manager, by this script.
         Game.startView = new Game.Views.BaseView({
             el: $("#start-screen")
         });
-        Game.mainView = new Game.Views.BaseView({
-            el: $("#main-menu")
+        Game.mainView = new Game.Views.HomeView({
+            el: $("#main-menu"),
+            model: Game.state,
+            router: Game.router
         });
         Game.battleView = new Game.Views.BattleArea({
             el: $("#battle-scene"),
@@ -114,60 +116,7 @@ to functions of the animation manager, by this script.
         Game.teamView.hide();
         Game.researchView.hide();
     }
-
-
-    function createBattle(engine) {
-        engine.createBattle(new Game.Models.BattleTeam(newPlayer().listIds(), {id: "player"}),
-                           new Game.Models.BattleTeam(newOpponent().listIds(), {id: "opponent"}));
-        engine.computeStep();
-    }
-
-
-    function newPlayer() {
-        return new Game.Models.UnitTeam([
-            {
-                id: idGen++,
-                template: 2,
-                level: 1
-            },
-            {
-                id: idGen++,
-                template: 3,
-                level: 1
-            },
-            {
-                id: idGen++,
-                template: 4,
-                level: 1
-            },
-            {
-                id: idGen++,
-                template: 5,
-                level: 1
-            }
-        ]);
-    }
-
-    function newOpponent() {
-        return new Game.Models.UnitTeam([
-            {
-                id: idGen++,
-                template: 1,
-                level: 1
-            },
-            {
-                id: idGen++,
-                template: 1,
-                level: 1
-            },
-            {
-                id: idGen++,
-                template: 1,
-                level: 1
-            }
-        ]);
-    }
-})();
+}());
 
 
 (function () {
@@ -211,4 +160,4 @@ to functions of the animation manager, by this script.
     };
 
     window.Game.StateMachine = StateMachine;
-})();
+}());

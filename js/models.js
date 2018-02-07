@@ -1,11 +1,61 @@
 (function () {
     "use strict";
+    /* global window:false, Backbone:false, _:false */
 
     var models = window.Game.Models,
         gameData = window.Game.data;
 
 
-    models.GameState = Backbone.Model.extend({});
+    models.GameState = Backbone.Model.extend({
+        genTeam: function () {
+            var team = new models.UnitTeam([
+                {
+                    id: 10,
+                    template: 1,
+                    level: 1
+                },
+                {
+                    id: 11,
+                    template: 1,
+                    level: 1
+                },
+                {
+                    id: 12,
+                    template: 1,
+                    level: 1
+                }
+            ]);
+            this.set("opponent", team.toJSON());
+            this._opponent = new models.BattleTeam(team.listIds(), {id: "opponent"});
+        },
+
+        genPlayer: function () {
+            var team = new models.UnitTeam([
+                {
+                    id: 1,
+                    template: 2,
+                    level: 1
+                },
+                {
+                    id: 2,
+                    template: 3,
+                    level: 1
+                },
+                {
+                    id: 3,
+                    template: 4,
+                    level: 1
+                },
+                {
+                    id: 4,
+                    template: 5,
+                    level: 1
+                }
+            ]);
+            this.set("player", team.toJSON());
+            this._player = new models.BattleTeam(team.listIds(), {id: "player"});
+        }
+    });
 
 
     /*{

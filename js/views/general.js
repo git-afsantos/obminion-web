@@ -1,5 +1,6 @@
 (function () {
     "use strict";
+    /* global window:false, Backbone:false */
 
     var views = window.Game.Views;
 
@@ -39,12 +40,12 @@
             this.listenTo(options.abilities, "sync", this.onSync);
         },
 
-        onRequest: function (model_or_collection, xhr, options) {
+        onRequest: function () {
             ++this.loading;
             if (this.loading === 1) this.$el.show();
         },
 
-        onSync: function (model_or_collection, response, options) {
+        onSync: function () {
             --this.loading;
             if (this.loading === 0) this.$el.hide();
         }

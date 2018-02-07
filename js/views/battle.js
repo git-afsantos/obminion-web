@@ -1,8 +1,8 @@
 (function () {
     "use strict";
+    /* global window:false, Backbone:false, _:false, $:false */
 
-    var models = window.Game.Models,
-        views = window.Game.Views;
+    var views = window.Game.Views;
 
     views.BattleActionBar = Backbone.View.extend({
         id:         "battle-action-bar",
@@ -132,7 +132,7 @@
             "transitionend": "onAnimationEnd"
         },
 
-        initialize: function (args) {
+        initialize: function () {
             var i, len;
             _.bindAll(this, "onAnimationEnd");
             this.animationCallback = null;
@@ -280,7 +280,7 @@
         },
 
 
-        onAnimationEnd: function (e) {
+        onAnimationEnd: function () {
             var f;
             --this.animating;
             console.log("onAnimationEnd", this.animating);
@@ -395,7 +395,7 @@
 
         cleanRotation: function () {
             console.log("cleanRotation");
-            var el, m, i = this.portraits.length;
+            var i = this.portraits.length;
             this.animating = 1;
             while (i--) {
                 this.portraits[i].removeClass("transition-opacity");
@@ -436,6 +436,12 @@
             this.listenTo(this.model, "battle:defeat", this.onBattleEnd);
             this.listenTo(this.model, "request:action", this.onRequestAction);
             this.listenTo(this.model, "battle:end_phase", this.animate);
+        },
+
+        build: function (teams) {
+            this.model.createBattle(teams[0], teams[1]);
+            this.model.computeStep();
+            return this;
         },
 
         onBattleStart: function () {

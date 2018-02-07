@@ -1,6 +1,8 @@
 
 (function () {
     "use strict";
+    /* global window:false, Backbone:false */
+
     var Game = window.Game,
         Router = Backbone.Router.extend({
             navOptions: { trigger: true, replace: true },
@@ -8,6 +10,7 @@
             routes: {
                 "":                 "start",
                 "home":             "home",
+                "team":             "team",
                 "battle":           "battle",
                 "research":         "research", // #research
                 "research/:what":   "research"  // #research/herbs
@@ -28,11 +31,19 @@
                 Game.board = Game.mainView;
             },
 
+            team: function() {
+                if (Game.state.get("status") !== "idle")
+                    return Game.router.navigate("", this.navOptions);
+                if (Game.board != null) Game.board.hide();
+                Game.teamView.show().build();
+                Game.board = Game.teamView;
+            },
+
             battle: function() {
                 if (Game.state.get("status") !== "battle")
                     return Game.router.navigate("", this.navOptions);
                 if (Game.board != null) Game.board.hide();
-                Game.battleView.show().build();
+                Game.battleView.show().build([Game.state._player, Game.state._opponent]);
                 Game.board = Game.battleView;
             },
 
@@ -40,7 +51,7 @@
                 if (Game.state.get("status") !== "idle")
                     return Game.router.navigate("", this.navOptions);
                 if (Game.board != null) Game.board.hide();
-                Game.researchView.show().build();
+                Game.researchView.show().build(what);
                 Game.board = Game.researchView;
             }
         });
