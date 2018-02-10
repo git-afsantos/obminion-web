@@ -18,41 +18,41 @@
 
             start: function() {
                 Game.state.set("status", "idle");
-                if (Game.board != null) Game.board.hide();
+                if (Game.view != null) Game.view.hide();
                 Game.startView.show().build();
-                Game.board = Game.startView;
+                Game.view = Game.startView;
             },
 
             home: function() {
                 if (Game.state.get("status") !== "idle")
                     return Game.router.navigate("", this.navOptions);
-                if (Game.board != null) Game.board.hide();
+                if (Game.view != null) Game.view.hide();
                 Game.mainView.show().build();
-                Game.board = Game.mainView;
+                Game.view = Game.mainView;
             },
 
             team: function() {
                 if (Game.state.get("status") !== "idle")
                     return Game.router.navigate("", this.navOptions);
-                if (Game.board != null) Game.board.hide();
+                if (Game.view != null) Game.view.hide();
                 Game.teamView.show().build();
-                Game.board = Game.teamView;
+                Game.view = Game.teamView;
             },
 
             battle: function() {
                 if (Game.state.get("status") !== "battle")
                     return Game.router.navigate("", this.navOptions);
-                if (Game.board != null) Game.board.hide();
-                Game.battleView.show().build([Game.state._player, Game.state._opponent]);
-                Game.board = Game.battleView;
+                if (Game.view != null) Game.view.hide();
+                Game.battleView.show().build([Game.state.playerTeam, Game.state.opponentTeam]);
+                Game.view = Game.battleView;
             },
 
             research: function(what) {
                 if (Game.state.get("status") !== "idle")
                     return Game.router.navigate("", this.navOptions);
-                if (Game.board != null) Game.board.hide();
+                if (Game.view != null) Game.view.hide();
                 Game.researchView.show().build(what);
-                Game.board = Game.researchView;
+                Game.view = Game.researchView;
             }
         });
     Game.router = new Router();

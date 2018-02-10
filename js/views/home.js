@@ -22,8 +22,7 @@
         },
 
         gotoBattle: function () {
-            this.model.genPlayer();
-            this.model.genTeam();
+            this.model.createBattle();
             this.model.set("status", "battle");
             this.router.navigate("battle", this.navOptions);
         },

@@ -187,8 +187,8 @@
                 this.portraits[0].show().attr("src", "assets/sprites/" + m._template.get("portrait") + ".png");
             } else {
                 this.$name.text("");
-                this.$hp.text("??");
-                this.$hpBar.width("100%");
+                this.$hp.text("");
+                this.$hpBar.width("0");
                 this.$level.text("");
                 this.$type.removeClass("icon-unit-0");
                 this.portraits[0].attr("src", "").hide();

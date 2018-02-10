@@ -2,59 +2,58 @@
     "use strict";
     /* global window:false, Backbone:false, _:false */
 
-    var models = window.Game.Models,
-        gameData = window.Game.data;
+    var models = window.Game.Models;
 
 
     models.GameState = Backbone.Model.extend({
-        genTeam: function () {
-            var team = new models.UnitTeam([
-                {
-                    id: 10,
-                    template: 1,
-                    level: 1
-                },
-                {
-                    id: 11,
-                    template: 1,
-                    level: 1
-                },
-                {
-                    id: 12,
-                    template: 1,
-                    level: 1
-                }
-            ]);
-            this.set("opponent", team.toJSON());
-            this._opponent = new models.BattleTeam(team.listIds(), {id: "opponent"});
+        initialize: function () {
+            this.species = new models.SpeciesCollection();
+            this.instances = new models.UnitTeam();
+            this.abilities = new models.AbilityCollection();
+            this.zones = new models.ZoneCollection();
+            this.playerTeam = new models.BattleTeam(null, {id: "player"});
+            this.opponentTeam = new models.BattleTeam(null, {id: "opponent"});
         },
 
-        genPlayer: function () {
-            var team = new models.UnitTeam([
-                {
-                    id: 1,
-                    template: 2,
-                    level: 1
-                },
-                {
-                    id: 2,
-                    template: 3,
-                    level: 1
-                },
-                {
-                    id: 3,
-                    template: 4,
-                    level: 1
-                },
-                {
-                    id: 4,
-                    template: 5,
-                    level: 1
-                }
+        options: function () {
+            return {
+                _species: this.species,
+                _instances: this.instances,
+                _abilities: this.abilities
+            };
+        },
+
+        createBattle: function () {
+            this.instances = models.UnitTeam.fromTemplates([
+                this.species.get(2),
+                this.species.get(3),
+                this.species.get(4),
+                this.species.get(5)
             ]);
-            this.set("player", team.toJSON());
-            this._player = new models.BattleTeam(team.listIds(), {id: "player"});
+            this.playerTeam = models.BattleTeam.fromUnitTeam(this.instances, this.abilities);
+            this.playerTeam.id = "player";
+            var instances = models.UnitTeam.fromTemplates([
+                this.species.get(1),
+                this.species.get(1),
+                this.species.get(1)
+            ]);
+            this.opponentTeam = models.BattleTeam.fromUnitTeam(instances, this.abilities);
+            this.opponentTeam.id = "opponent";
         }
+    });
+
+
+    /*{
+        id,
+        name,
+        missions
+    }*/
+    models.Zone = Backbone.Model.extend({});
+
+    models.ZoneCollection = Backbone.Collection.extend({
+        model: models.Zone,
+
+        url: "data/zones.json"
     });
 
 
@@ -94,15 +93,15 @@
             experience: 0
         },
 
-        initialize: function (attr) {
-            this._template = gameData.species.get(attr.template);
+        initialize: function (attr, options) {
+            this._template = options.UnitTemplate;
             this.set({
+                id:         "UI" + this.cid,
                 health:     this.health(),
                 power:      this.power(),
                 speed:      this.speed(),
-                ability:    _.sample(this._template.get("abilities"))
+                ability:    "ability" in attr ? attr.ability : _.sample(this._template.get("abilities"))
             }, {silent: true});
-            gameData.instances.add(this);
         },
 
         health: function () {
@@ -115,6 +114,19 @@
 
         speed: function () {
             return this._template.get("speed") + ((this.get("level") - 1) / 3 | 0);
+        }
+    }, {
+        fromUnitTemplate: function (template) {
+            var unit = new models.UnitInstance({
+                template:   template.id,
+                health:     template.get("health"),
+                power:      template.get("power"),
+                speed:      template.get("speed"),
+                ability:    _.sample(template.get("abilities"))
+            }, {
+                UnitTemplate: template
+            });
+            return unit;
         }
     });
 
@@ -130,6 +142,15 @@
                 instance: model.id,
                 template: model.get("template")
             };
+        }
+    }, {
+        fromTemplates: function (templates) {
+            var i = 0, len = templates.length,
+                units = new models.UnitTeam();
+            for (; i < len; ++i) {
+                units.add(models.UnitInstance.fromUnitTemplate(templates[i]));
+            }
+            return units;
         }
     });
 
@@ -147,13 +168,13 @@
         effects
     }*/
     models.BattleUnit = Backbone.Model.extend({
-        initialize: function (attr) {
-            this._instance  = gameData.instances.get(attr.instance);
-            this._template  = gameData.species.get(this._instance.get("template"));
-            this._ability   = gameData.abilities.get(this._instance.get("ability")) || null;
-            this._maxHealth = new models.Attribute(attr.maxHealth || { value: this._instance.get("health") });
-            this._power     = new models.Attribute(attr.power || { value: this._instance.get("power") });
-            this._speed     = new models.Attribute(attr.speed || { value: this._instance.get("speed") });
+        initialize: function (attr, options) {
+            this._instance = options.UnitInstance;
+            this._template  = options.UnitTemplate;
+            this._ability   = options.AbilityTemplate;
+            this._maxHealth = new models.Attribute({value: attr.maxHealth || this._instance.get("health")});
+            this._power     = new models.Attribute({value: attr.power || this._instance.get("power")});
+            this._speed     = new models.Attribute({value: attr.speed || this._instance.get("speed")});
             this._handlers  = [];
             this.set({
                 template:   this._instance.get("template"),
@@ -266,6 +287,26 @@
             json.speed = this._speed.toJSON();
             return json;
         }
+    }, {
+        fromUnitInstance: function (unit, abilities) {
+            var battleUnit = new models.BattleUnit({
+                id:         "BU" + unit.cid,
+                instance:   unit.id,
+                template:   unit.get("template"),
+                type:       unit._template.get("type"),
+                health:     unit.get("health"),
+                maxHealth:  unit.get("health"),
+                power:      unit.get("power"),
+                speed:      unit.get("speed"),
+                ability:    unit.get("ability"),
+                effects:    {}
+            }, {
+                UnitTemplate: unit._template,
+                UnitInstance: unit,
+                AbilityTemplate: abilities.get(unit.get("ability")) || null
+            });
+            return battleUnit;
+        }
     });
 
 
@@ -276,9 +317,8 @@
     models.BattleTeam = Backbone.Collection.extend({
         model: models.BattleUnit,
 
-        initialize: function (models, options) {
+        initialize: function () {
             this._dead = [];
-            if ("id" in options) this.id = options.id;
         },
 
 
@@ -341,6 +381,15 @@
 
         _predicate_isDead: function (m) {
             return !m.isAlive();
+        }
+    }, {
+        fromUnitTeam: function (team, abilities) {
+            var i = 0, len = team.length,
+                battleTeam = new models.BattleTeam();
+            for (; i < len; ++i) {
+                battleTeam.add(models.BattleUnit.fromUnitInstance(team.at(i), abilities));
+            }
+            return battleTeam;
         }
     });
 
@@ -514,4 +563,7 @@
         // +50%
         PLUS:   function (damage) { return (damage + (damage / 2)) | 0; }
     };
+
+
+    window.Game.state = new models.GameState();
 })();

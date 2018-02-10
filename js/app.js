@@ -33,7 +33,7 @@ to functions of the animation manager, by this script.
         Models: {},
         Views: {},
         state: null,
-        board: null,
+        view: null,
         startView: null,
         mainView: null,
         battleView: null,
@@ -63,18 +63,18 @@ to functions of the animation manager, by this script.
         });
         */
 
-        Game.state = new Game.Models.GameState();
-        Game.data.species = new Game.Models.SpeciesCollection();
-        Game.data.instances = new Game.Models.UnitTeam();
-        Game.data.abilities = new Game.Models.AbilityCollection();
+        //Game.state = new Game.Models.GameState();
+        //Game.data.species = new Game.Models.SpeciesCollection();
+        //Game.data.instances = new Game.Models.UnitTeam();
+        //Game.data.abilities = new Game.Models.AbilityCollection();
 
         bootstrapViews();
 
         // $(window).resize(_.debounce(onResize, 100));
         Backbone.history.start();
         //BattleEngine.trigger("request", BattleEngine);
-        Game.data.species.fetch();
-        Game.data.abilities.fetch();
+        Game.state.species.fetch();
+        Game.state.abilities.fetch();
         //BattleEngine.trigger("sync", BattleEngine);
 
         $("#start-button").on("click", function () {
@@ -88,8 +88,8 @@ to functions of the animation manager, by this script.
         Game.preloader = new Game.Views.Preloader({
             el: $("#preloader"),
             model: Game.BattleEngine,
-            species: Game.data.species,
-            abilities: Game.data.abilities
+            species: Game.state.species,
+            abilities: Game.state.abilities
         });
         Game.startView = new Game.Views.BaseView({
             el: $("#start-screen")
