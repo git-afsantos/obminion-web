@@ -240,15 +240,18 @@ html, body {
     transform: rotate(30deg) translate(62px) rotate(-30deg);
 }
 
-.player-panel .portrait-wrapper > .pos-2-4 {
+.player-panel .portrait-wrapper > .pos-2-4,
+#team-player-panel .portrait-wrapper > .pos-2-4 {
     transform: rotate(60deg) translate(62px) rotate(-60deg);
 }
 
-.player-panel .portrait-wrapper > .pos-3-4 {
+.player-panel .portrait-wrapper > .pos-3-4,
+#team-player-panel .portrait-wrapper > .pos-3-4 {
     transform: rotate(135deg) translate(64px) rotate(-135deg);
 }
 
-.player-panel .portrait-wrapper > .pos-4-4 {
+.player-panel .portrait-wrapper > .pos-4-4,
+#team-player-panel .portrait-wrapper > .pos-4-4 {
     transform: rotate(210deg) translate(64px) rotate(-210deg);
 }
 
@@ -373,15 +376,18 @@ html, body {
         transform: rotate(30deg) translate(88px) rotate(-30deg);
     }
 
-    .player-panel .portrait-wrapper > .pos-2-4 {
+    .player-panel .portrait-wrapper > .pos-2-4,
+    #team-player-panel .portrait-wrapper > .pos-2-4 {
         transform: rotate(60deg) translate(88px) rotate(-60deg);
     }
 
-    .player-panel .portrait-wrapper > .pos-3-4 {
+    .player-panel .portrait-wrapper > .pos-3-4,
+    #team-player-panel .portrait-wrapper > .pos-3-4 {
         transform: rotate(135deg) translate(90px) rotate(-135deg);
     }
 
-    .player-panel .portrait-wrapper > .pos-4-4 {
+    .player-panel .portrait-wrapper > .pos-4-4,
+    #team-player-panel .portrait-wrapper > .pos-4-4 {
         transform: rotate(210deg) translate(92px) rotate(-210deg);
     }
 
@@ -437,8 +443,26 @@ html, body {
 
 
 
+#team-player-panel {
+    position: relative;
+    padding: 2em;
+}
 
+#team-player-panel .portrait-wrapper {
+    display: inline-block;
+}
 
+#team-player-panel .info-panel {
+    border: 1px solid;
+    border-radius: 6px;
+    background-color: ivory;
+    overflow: hidden;
+}
+
+#team-player-panel .info-panel span.detail {
+    color: grey;
+    font-size: 0.75em;
+}
 
 
 
@@ -453,6 +477,11 @@ html, body {
     overflow: hidden;
 }
 
+.progress-bar.small {
+    font-size: 0.75em;
+    background-color: darkslategrey;
+}
+
 .progress-bar > .progress {
     position: absolute;
     width: 100%;
@@ -461,6 +490,10 @@ html, body {
     left: 0;
     z-index: 100;
     background-color: limegreen;
+}
+
+.progress-bar.small > .progress {
+    background-color: blueviolet;
 }
 
 .progress-bar > .progress-label {
@@ -472,6 +505,10 @@ html, body {
     text-align: center;
     font-weight: bold;
     z-index: 200;
+}
+
+.progress-bar > .progress-label {
+    color: whitesmoke;
 }
 
 
