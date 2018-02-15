@@ -27,6 +27,7 @@
     <script src="js/battle-engine.js"></script>
     <script src="js/views/general.js"></script>
     <script src="js/views/home.js"></script>
+    <script src="js/views/team.js"></script>
     <script src="js/views/battle.js"></script>
     <script src="js/routes.js"></script>
 </head>
@@ -134,9 +135,14 @@
                     <div class="icon-unit"><img src=""/></div>
                     <span class="stretch inline-block"></span>
                 </div>
-                <div class="pure-u-1-4 pure-u-md-1-8">up</div>
+                <div class="pure-u-1-4 pure-u-md-1-8">
+                    <div class="scroll-buttons">
+                        <button class="pure-button scroll-up text-large"><i class="fa fa-arrow-up"></i></button>
+                        <button class="pure-button scroll-down text-large"><i class="fa fa-arrow-down"></i></button>
+                    </div>
+                </div>
             </div>
-            <div class="margin-top text-center">
+            <div class="text-center">
                 <button id="team-button-done" class="pure-button text-large">Done</button>
             </div>
         </section>

@@ -9,6 +9,7 @@
         initialize: function () {
             this.species = new models.SpeciesCollection();
             this.instances = new models.UnitTeam();
+            this.playerCollection = new models.UnitTeam();
             this.abilities = new models.AbilityCollection();
             this.zones = new models.ZoneCollection();
             this.playerTeam = new models.BattleTeam(null, {id: "player"});
@@ -23,13 +24,21 @@
             };
         },
 
-        createBattle: function () {
+        createCollection: function () {
             this.instances = models.UnitTeam.fromTemplates([
                 this.species.get(2),
                 this.species.get(3),
                 this.species.get(4),
                 this.species.get(5)
             ]);
+            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(2));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(1));
+        },
+
+        createBattle: function () {
             this.playerTeam = models.BattleTeam.fromUnitTeam(this.instances, this.abilities);
             this.playerTeam.id = "player";
             var instances = models.UnitTeam.fromTemplates([
@@ -132,6 +141,10 @@
 
     models.UnitTeam = Backbone.Collection.extend({
         model: models.UnitInstance,
+
+        addFromTemplate: function (template) {
+            return this.add(models.UnitInstance.fromUnitTemplate(template));
+        },
 
         listIds: function () {
             return this.map(this._model_to_object);

@@ -466,6 +466,7 @@ html, body {
 
 #team-collection-viewer {
     margin-top: 4em;
+    line-height: 1;
 }
 
 #team-collection-viewer .icon-unit {
@@ -489,6 +490,25 @@ html, body {
         width: 64px;
         height: 64px;
     }
+}
+
+#team-collection-viewer .scroll-buttons {
+    position: relative;
+    height: 100%;
+}
+
+#team-collection-viewer .scroll-buttons > .scroll-up {
+    position: absolute;
+    top: 0;
+    bottom: auto;
+    right: 0;
+}
+
+#team-collection-viewer .scroll-buttons > .scroll-down {
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    right: 0;
 }
 
 

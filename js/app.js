@@ -78,6 +78,7 @@ to functions of the animation manager, by this script.
         //BattleEngine.trigger("sync", BattleEngine);
 
         $("#start-button").on("click", function () {
+            Game.state.createCollection();
             Game.state.set("status", "idle");
             Game.router.navigate("home", { trigger: true, replace: true });
         });
@@ -105,8 +106,10 @@ to functions of the animation manager, by this script.
             router: Game.router,
             state: Game.state
         });
-        Game.teamView = new Game.Views.BaseView({
-            el: $("#team-menu")
+        Game.teamView = new Game.Views.TeamView({
+            el: $("#team-menu"),
+            model: Game.state,
+            router: Game.router
         });
         Game.researchView = new Game.Views.BaseView({
             el: $("#research-menu")
