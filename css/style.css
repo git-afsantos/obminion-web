@@ -471,8 +471,8 @@ html, body {
 
 #team-collection-viewer .icon-unit {
     display: inline-block;
-    width: 48px;
-    height: 48px;
+    width: 3em;
+    height: 3em;
     border-width: 1px;
     border-style: solid;
     border-radius: 50%;
@@ -487,8 +487,8 @@ html, body {
 
 @media (min-width: 640px) and (min-height: 480px) {
     #team-collection-viewer .icon-unit {
-        width: 64px;
-        height: 64px;
+        width: 4em;
+        height: 4em;
     }
 }
 

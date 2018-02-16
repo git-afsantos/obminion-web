@@ -1,6 +1,6 @@
 (function () {
     "use strict";
-    /* global window:false */
+    /* global window:false, Backbone:false */
 
     var views = window.Game.Views,
         Portrait;
