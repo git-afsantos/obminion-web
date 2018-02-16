@@ -27,13 +27,21 @@ html, body {
 #battle-scene .icon,
 #battle-scene .label,
 #battle-scene .icon-unit,
-#battle-scene .adornment {
+#battle-scene .adornment,
+#team-menu .portrait,
+#team-menu .icon-unit {
     background-color: whitesmoke;
     border-color: #333;
 }
 
-#battle-scene .icon-unit.disabled {
+#battle-scene .icon-unit.disabled,
+#team-menu .icon-unit.disabled {
     background-color: darkgray;
+}
+
+#team-menu .portrait.selected,
+#team-menu .icon-unit.selected {
+    background-color: khaki;
 }
 
 
