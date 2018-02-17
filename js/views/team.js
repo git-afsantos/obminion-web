@@ -1,9 +1,9 @@
 (function () {
     "use strict";
-    /* global window:false, Backbone:false */
+    /* global window:false, Backbone:false, _:false, $:false */
 
     var views = window.Game.Views,
-        Portrait;
+        Portrait, InfoPanel;
 
     views.TeamView = views.BaseView.extend({
         events: {
@@ -19,6 +19,11 @@
             this.selected = null;
             this.pageOffset = 0;
             this._initPortraits();
+            this.infoPanel = new InfoPanel({
+                el: $("#team-player-panel .info-panel").eq(0),
+                abilities: this.model.abilities
+            });
+            this.infoPanel.$el.hide();
         },
 
         build: function () {
@@ -30,6 +35,11 @@
                 this.collectionPortraits[i].model = this.model.playerCollection.at(this.pageOffset + i);
             }
             return this.render();
+        },
+
+        dismantle: function () {
+            // TODO
+            return this;
         },
 
         render: function () {
@@ -61,9 +71,12 @@
             }
             if (this.selected === portrait) {
                 this.selected = null;
+                this.infoPanel.model = null;
             } else {
                 this.selected = portrait;
+                this.infoPanel.model = portrait.model;
             }
+            this.infoPanel.render();
         },
 
         _initPortraits: function () {
@@ -116,14 +129,42 @@
         select: function () {
             if (this.model != null) {
                 this.selected = true;
-                this.$el.addClass("selected");
+                this.$el.addClass("highlight");
                 this.trigger("select", this);
             } else this.deselect();
         },
 
         deselect: function () {
             this.selected = false;
-            this.$el.removeClass("selected");
+            this.$el.removeClass("highlight");
+        }
+    });
+
+
+    InfoPanel = Backbone.View.extend({
+        initialize: function (options) {
+            this.template = _.template($("#team-info-panel-content").html(), {variable: "data"});
+            this.abilities = options.abilities;
+        },
+
+        render: function () {
+            var ability;
+            if (this.model != null) {
+                ability = this.abilities.get(this.model.get("ability"));
+                this.$el.html(this.template({
+                    name: this.model._template.get("name"),
+                    type: this.model._template.get("type"),
+                    level: this.model.get("level"),
+                    xp: this.model.get("experience"),
+                    maxxp: this.model.maxExperience(),
+                    ability: ability != null ? ability.get("name") : "None",
+                    abilityDescription: ability != null ? ability.get("description") : "&nbsp;"
+                }));
+                this.$el.show();
+            } else {
+                this.$el.hide();
+            }
+            return this;
         }
     });
 }());

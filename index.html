@@ -96,18 +96,14 @@
             </div>
         </section>
         <section id="team-menu">
-            <div id="team-player-panel" class="pure-g">
-                <div class="pure-u-1 pure-u-md-2-5 text-center">
-                    <div class="portrait-wrapper">
-                        <div class="icon-unit pos-2-4"><img src=""/></div>
-                        <div class="icon-unit pos-3-4"><img src=""/></div>
-                        <div class="icon-unit pos-4-4"><img src=""/></div>
-                        <div class="portrait"><img src=""/></div>
-                    </div>
+            <div id="team-player-panel">
+                <div class="portrait-wrapper">
+                    <div class="icon-unit pos-2-4"><img src=""/></div>
+                    <div class="icon-unit pos-3-4"><img src=""/></div>
+                    <div class="icon-unit pos-4-4"><img src=""/></div>
+                    <div class="portrait"><img src=""/></div>
                 </div>
-                <div class="pure-u-1 pure-u-md-3-5">
-                    <div class="info-panel padding show-block-xs"></div>
-                </div>
+                <div class="info-panel padding"></div>
             </div>
             <div id="team-collection-viewer" class="pure-g">
                 <div class="pure-u-3-4 pure-u-md-7-8">
@@ -170,14 +166,14 @@
         </section>
     </div>
     <script id="team-info-panel-content" type="text/template">
-        <h4>Unit Name</h4>
-        <span class="detail">Lv. 1, Type: Type</span>
+        <h4><%= data.name %></h4>
+        <span class="detail">Lv. <%= data.level %>, Type: <%= data.type %></span>
         <div class="progress-bar small">
-            <div class="progress"></div>
-            <div class="progress-label">0 / 0 XP</div>
+            <div class="progress" style="width: <%= data.xp / (data.maxxp || 1) %>%"></div>
+            <div class="progress-label"><%= data.xp %> / <%= data.maxxp %> XP</div>
         </div>
-        <p><b>Ability: None</b></p>
-        <p>This ability does nothing useful.</p>
+        <p><b>Ability: <%= data.ability %></b></p>
+        <p><%= data.abilityDescription %></p>
     </script>
 </body>
 </html>

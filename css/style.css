@@ -448,11 +448,19 @@ html, body {
 #team-menu {padding: 2em;}
 }
 
+#team-player-panel {
+    position: relative;
+}
+
 #team-player-panel .portrait-wrapper {
-    display: inline-block;
+    margin-left: 3em;
 }
 
 #team-player-panel .info-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 15em;
     border: 1px solid;
     border-radius: 6px;
     background-color: ivory;
@@ -465,8 +473,7 @@ html, body {
 }
 
 #team-collection-viewer {
-    margin-top: 4em;
-    line-height: 1;
+    margin-top: 2.5em;
 }
 
 #team-collection-viewer .icon-unit {

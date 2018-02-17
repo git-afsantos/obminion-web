@@ -37,11 +37,17 @@ html, body {
 #battle-scene .icon-unit.disabled,
 #team-menu .icon-unit.disabled {
     background-color: darkgray;
+    cursor: not-allowed;
+}
+
+#team-menu .portrait.highlight,
+#team-menu .icon-unit.highlight {
+    background-color: khaki;
 }
 
 #team-menu .portrait.selected,
 #team-menu .icon-unit.selected {
-    background-color: khaki;
+    background-color: lightskyblue;
 }
 
 

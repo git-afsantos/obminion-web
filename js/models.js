@@ -123,6 +123,22 @@
 
         speed: function () {
             return this._template.get("speed") + ((this.get("level") - 1) / 3 | 0);
+        },
+
+        maxExperience: function () {
+            return this.get("level") * 12.5 | 0;
+        },
+
+        grantExperience: function (amount) {
+            var level = this.get("level"),
+                xp = this.get("experience") + amount,
+                maxXp = this.maxExperience();
+            while (xp >= maxXp) {
+                xp -= maxXp;
+                ++level;
+                maxXp = this.maxExperience();
+            }
+            this.set("level", level);
         }
     }, {
         fromUnitTemplate: function (template) {
