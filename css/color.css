@@ -42,12 +42,12 @@ html, body {
 
 #team-menu .portrait.highlight,
 #team-menu .icon-unit.highlight {
-    background-color: khaki;
+    background-color: lightskyblue;
 }
 
 #team-menu .portrait.selected,
 #team-menu .icon-unit.selected {
-    background-color: lightskyblue;
+    background-color: khaki;
 }
 
 

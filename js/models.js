@@ -25,12 +25,10 @@
         },
 
         createCollection: function () {
-            this.instances = models.UnitTeam.fromTemplates([
-                this.species.get(2),
-                this.species.get(3),
-                this.species.get(4),
-                this.species.get(5)
-            ]);
+            this.instances.addFromTemplate(this.species.get(2));
+            this.instances.addFromTemplate(this.species.get(3));
+            this.instances.addFromTemplate(this.species.get(4));
+            this.instances.addFromTemplate(this.species.get(5));
             this.playerCollection.addFromTemplate(this.species.get(1));
             this.playerCollection.addFromTemplate(this.species.get(2));
             this.playerCollection.addFromTemplate(this.species.get(3));

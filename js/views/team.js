@@ -44,11 +44,13 @@
 
         render: function () {
             var i;
-            for (i = this.teamPortraits.length; i--;) {
-                this.teamPortraits[i].render();
-            }
-            for (i = this.collectionPortraits.length; i--;) {
-                this.collectionPortraits[i].render();
+            if (this.visible) {
+                for (i = this.teamPortraits.length; i--;) {
+                    this.teamPortraits[i].render();
+                }
+                for (i = this.collectionPortraits.length; i--;) {
+                    this.collectionPortraits[i].render();
+                }
             }
             return this;
         },
@@ -67,16 +69,61 @@
 
         onSelect: function (portrait) {
             if (this.selected != null) {
-                this.selected.deselect();
-            }
-            if (this.selected === portrait) {
-                this.selected = null;
-                this.infoPanel.model = null;
+                this.selected.select(false);
+                if (this.selected === portrait) {
+                    this.highlightParty(false);
+                    this.selected = null;
+                    this.infoPanel.model = null;
+                } else if (portrait.teamPortrait) {
+                    this.highlightParty(false);
+                    this.swapTeamUnit(this.selected, portrait);
+                    this.selected.render();
+                    portrait.render();
+                    this.selected = null;
+                    this.infoPanel.model = null;
+                } else {
+                    this.selected = portrait;
+                    this.highlightParty(true);
+                    portrait.select(true);
+                    this.infoPanel.model = portrait.model;
+                }
             } else {
                 this.selected = portrait;
+                this.highlightParty(true);
+                portrait.select(true);
                 this.infoPanel.model = portrait.model;
             }
             this.infoPanel.render();
+        },
+
+        swapTeamUnit: function (sourceView, targetView) {
+            var sourceUnit = sourceView.model,
+                targetUnit = targetView.model,
+                team = this.model.instances,
+                collection = sourceUnit.collection,
+                i = team.indexOf(targetUnit),
+                j = collection.indexOf(sourceUnit);
+            if (team === collection) {
+                team.models[i] = sourceUnit;
+                team.models[j] = targetUnit;
+                team.trigger("update", team);
+            } else {
+                team.remove(targetUnit);
+                collection.remove(sourceUnit);
+                team.add(sourceUnit, {at: i});
+                collection.add(targetUnit, {at: j});
+            }
+            sourceView.model = targetUnit;
+            targetView.model = sourceUnit;
+            return this;
+        },
+
+        highlightParty: function (active) {
+            var i = 0, len = this.teamPortraits.length;
+            for (; i < len; i++) {
+                this.teamPortraits[i].highlight(active);
+            }
+            return this;
         },
 
         _initPortraits: function () {
@@ -85,19 +132,19 @@
             this.collectionPortraits = [];
             $icons = this.$("#team-player-panel .portrait");
             for (i = 0, len = $icons.length; i < len; ++i) {
-                p = new Portrait({el: $icons.eq(i)});
+                p = new Portrait({el: $icons.eq(i), teamPortrait: true});
                 this.teamPortraits.push(p);
                 this.listenTo(p, "select", this.onSelect);
             }
             $icons = this.$("#team-player-panel .icon-unit");
             for (i = 0, len = $icons.length; i < len; ++i) {
-                p = new Portrait({el: $icons.eq(i)});
+                p = new Portrait({el: $icons.eq(i), teamPortrait: true});
                 this.teamPortraits.push(p);
                 this.listenTo(p, "select", this.onSelect);
             }
             $icons = this.$("#team-collection-viewer .icon-unit");
             for (i = 0, len = $icons.length; i < len; ++i) {
-                p = new Portrait({el: $icons.eq(i)});
+                p = new Portrait({el: $icons.eq(i), teamPortrait: false});
                 this.collectionPortraits.push(p);
                 this.listenTo(p, "select", this.onSelect);
             }
@@ -107,10 +154,11 @@
 
     Portrait = Backbone.View.extend({
         events: {
-            "click": "select"
+            "click": "onClick"
         },
 
-        initialize: function () {
+        initialize: function (options) {
+            this.teamPortrait = options.teamPortrait;
             this.selected = false;
             this.$img = this.$("img");
         },
@@ -126,17 +174,29 @@
             return this;
         },
 
-        select: function () {
+        onClick: function () {
             if (this.model != null) {
-                this.selected = true;
-                this.$el.addClass("highlight");
                 this.trigger("select", this);
-            } else this.deselect();
+            }
         },
 
-        deselect: function () {
-            this.selected = false;
+        highlight: function (active) {
+            if (active) {
+                this.$el.addClass("highlight");
+            } else {
+                this.$el.removeClass("highlight");
+            }
+        },
+
+        select: function (active) {
             this.$el.removeClass("highlight");
+            if (active) {
+                this.selected = true;
+                this.$el.addClass("selected");
+            } else {
+                this.selected = false;
+                this.$el.removeClass("selected");
+            }
         }
     });
 
