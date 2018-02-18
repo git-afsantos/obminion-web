@@ -34,6 +34,22 @@
             this.playerCollection.addFromTemplate(this.species.get(3));
             this.playerCollection.addFromTemplate(this.species.get(3));
             this.playerCollection.addFromTemplate(this.species.get(1));
+            
+            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(2));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(2));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(2));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(3));
+            this.playerCollection.addFromTemplate(this.species.get(1));
         },
 
         createBattle: function () {

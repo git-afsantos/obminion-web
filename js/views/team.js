@@ -31,9 +31,8 @@
             for (i = 0, len = this.teamPortraits.length; i < len; ++i) {
                 this.teamPortraits[i].model = this.model.instances.at(i);
             }
-            for (i = 0, len = this.collectionPortraits.length; i < len; ++i) {
-                this.collectionPortraits[i].model = this.model.playerCollection.at(this.pageOffset + i);
-            }
+            this.updateCollectionPortraits();
+            this.clearHighlights();
             return this.render();
         },
 
@@ -60,10 +59,26 @@
         },
 
         scrollUp: function () {
+            var clen = this.model.playerCollection.length,
+                pages = ((clen / this.collectionPortraits.length) | 0) + 1;
+            this.pageOffset--;
+            if (this.pageOffset < 0) {
+                this.pageOffset = pages - 1;
+            }
+            this.updateCollectionPortraits();
+            this.clearHighlights();
             this.render();
         },
 
         scrollDown: function () {
+            var clen = this.model.playerCollection.length,
+                pages = ((clen / this.collectionPortraits.length) | 0) + 1;
+            this.pageOffset++;
+            if (this.pageOffset >= pages) {
+                this.pageOffset = 0;
+            }
+            this.updateCollectionPortraits();
+            this.clearHighlights();
             this.render();
         },
 
@@ -124,6 +139,25 @@
                 this.teamPortraits[i].highlight(active);
             }
             return this;
+        },
+
+        updateCollectionPortraits: function () {
+            var i = 0, len = this.collectionPortraits.length,
+                offset = this.pageOffset * len;
+            for (; i < len; ++i) {
+                this.collectionPortraits[i].model = this.model.playerCollection.at(offset + i);
+            }
+            return this;
+        },
+
+        clearHighlights: function () {
+            if (this.selected != null) {
+                this.selected.select(false);
+                this.highlightParty(false);
+                this.selected = null;
+                this.infoPanel.model = null;
+                this.infoPanel.render();
+            }
         },
 
         _initPortraits: function () {

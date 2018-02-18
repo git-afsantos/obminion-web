@@ -560,7 +560,7 @@ html, body {
     z-index: 200;
 }
 
-.progress-bar > .progress-label {
+.progress-bar.small > .progress-label {
     color: whitesmoke;
 }
 

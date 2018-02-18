@@ -454,7 +454,7 @@
 
         _state_defeat: function () {
 //            console.log("Defeat.");
-            be.trigger("battle:defeat", this);
+            this.trigger("battle:defeat", this);
             this.set("state", "battle:defeat");
             this.trigger("battle:end_phase", this);
         },
