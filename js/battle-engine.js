@@ -22,6 +22,7 @@
         if (arguments.length < 2) { return this._teams[i]; }
         this._teams[i] = team;
         team._teamId = i;
+        this.listenTo(team, "remove", this.onUnitRemove);
         // this.trigger("team:set", i, team);
         return this;
     };
@@ -138,6 +139,21 @@
         }*/
     };
 
+    BattleMechanics.prototype.onUnitRemove = function (unit, team) {
+        var hs = unit._handlers, i = hs.length, j;
+        while (i--) {
+            hs[i].stopListening();
+            j = this._handlers.indexOf(hs[i]);
+            if (j > -1) {
+                this._handlers.splice(j, 1);
+            }
+        }
+    };
+
+    BattleMechanics.prototype._opposing = function (unit) {
+        return this._teams[(unit.collection._teamId + 1) % 2];
+    };
+
     ////////////////////////////////////////////////////////////////////////////
 
     BattleMechanics.prototype.target = function (unit, type) {
@@ -145,31 +161,60 @@
     };
 
     BattleMechanics.prototype._targets = {
-        "all": function () {
+        all: function () {
             return _.bind(function () {
                 if (this._teams[0].length === 0 && this._teams[1].length === 0)
                     return null;
                 return this._teams[0].toArray().concat(this._teams[1].toArray());
             }, this);
         },
-        "self": function (unit) {
+        self: function (unit) {
             return function () { return unit; };
         },
-        "friend:team": function (unit) {
+        self_left: function (unit) {
+            return function () { return unit.collection.getAtLeft(unit); };
+        },
+        self_right: function (unit) {
+            return function () { return unit.collection.getAtRight(unit); };
+        },
+        self_adjacent: function (unit) {
+            return function () {
+                var c = unit.collection;
+                if (c.length > 2)
+                    return [c.getAtLeft(unit), c.getAtRight(unit)];
+                if (c.length > 1)
+                    return c.getAtRight(unit);
+                return null;
+            };
+        },
+        friend_team: function (unit) {
             return function () { return unit.collection; };
         },
-        "friend:all": function (unit) {
+        friend_active: function (unit) {
+            return function () { return unit.collection.getActive(); }
+        },
+        friend_all: function (unit) {
             return function () {
                 return unit.collection.length === 0 ? null : unit.collection.toArray();
             };
         },
-        "friend:left": function (unit) {
-            return function () { return unit.collection.getAtLeft(unit); };
+        friend_left: function (unit) {
+            return function () { return unit.collection.getAtLeft(); };
         },
-        "friend:right": function (unit) {
-            return function () { return unit.collection.getAtRight(unit); };
+        friend_right: function (unit) {
+            return function () { return unit.collection.getAtRight(); };
         },
-        "friend:front": function (unit) {
+        friend_adjacent: function (unit) {
+            return function () {
+                var c = unit.collection;
+                if (c.length > 2)
+                    return [c.getAtLeft(), c.getAtRight()];
+                if (c.length > 1)
+                    return c.getAtRight();
+                return null;
+            };
+        },
+        friend_front: function (unit) {
             return function () {
                 var c = unit.collection;
                 switch (c.length) {
@@ -180,34 +225,44 @@
                 }
             };
         },
-        "friend:others": function (unit) {
+        friend_others: function (unit) {
             return function () { return unit.collection.without(unit); };
         },
-        "friend:standby": function (unit) {
+        friend_standby: function (unit) {
             return function () { return unit.collection.without(unit.collection.getActive()); };
         },
-        "opponent": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent: function (unit) {
+            var c = this._opposing(unit);
             return function () { return c.getActive(); };
         },
-        "opponent:team": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent_team: function (unit) {
+            var c = this._opposing(unit);
             return function () { return c; };
         },
-        "opponent:all": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent_all: function (unit) {
+            var c = this._opposing(unit);
             return function () { return c.length === 0 ? null : c.toArray(); };
         },
-        "opponent:left": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent_left: function (unit) {
+            var c = this._opposing(unit);
             return function () { return c.getAtLeft(); };
         },
-        "opponent:right": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent_right: function (unit) {
+            var c = this._opposing(unit);
             return function () { return c.getAtRight(); }
         },
-        "opponent:front": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent_adjacent: function (unit) {
+            var c = this._opposing(unit);
+            return function () {
+                if (c.length > 2)
+                    return [c.getAtLeft(), c.getAtRight()];
+                if (c.length > 1)
+                    return c.getAtRight();
+                return null;
+            };
+        },
+        opponent_front: function (unit) {
+            var c = this._opposing(unit);
             return function () {
                 switch (c.length) {
                     case 0:     return null;
@@ -217,8 +272,8 @@
                 }
             };
         },
-        "opponent:standby": function (unit) {
-            var c = this._teams[(unit.collection._teamId + 1) % 2];
+        opponent_standby: function (unit) {
+            var c = this._opposing(unit);
             return function () { return c.without(c.getActive()); }
         },
     };
@@ -274,7 +329,7 @@
             e = this.events[i];
             t = this.mechanics.target(this.unit, e[0])();
             if (t != null) {
-                if (t instanceof Array) {
+                if (t.length != null) {
                     j = t.length;
                     while (j--) this.listenTo(t[j], e[1], this.applyEffect);
                 } else {

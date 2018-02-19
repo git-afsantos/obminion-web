@@ -369,13 +369,15 @@
             return this.at(0);
         },
 
-        getAtLeft: function (unit) {
-            if (!unit) return this.last();
+        getAtLeft: function (unit, strict) {
+            if (strict && this.length < 3) return null;
+            if (!unit) return this.length > 1 ? this.last() : null;
             var i = this.indexOf(unit);
             return i < 0 ? null : this.at((i - 1 + this.length) % this.length);
         },
 
-        getAtRight: function (unit) {
+        getAtRight: function (unit, strict) {
+            if (strict && this.length < 3) return null;
             if (!unit) return this.at(1);
             var i = this.indexOf(unit);
             return i < 0 ? null : this.at((i + 1) % this.length);
