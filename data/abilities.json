@@ -4,8 +4,47 @@
     "description": "Does nothing special.",
     "effects": [{
         "mechanic": "log",
-        "events": ["friend:others battleunit:defend"],
-        "targets": [],
+        "events": ["friend_others defend"],
+        "target": "self",
         "parameters": {}
+    }]
+}, {
+    "id": 2,
+    "name": "Recoil",
+    "description": "The user takes some damage when attacking.",
+    "effects": [{
+        "mechanic": "damage",
+        "target": "self",
+        "events": ["self post_attack"],
+        "parameters": {
+            "relative": 0.5,
+            "reference": "damage"
+        }
+    }]
+}, {
+    "id": 3,
+    "name": "Lifesteal",
+    "description": "The user heals himself for half of the damage dealt.",
+    "effects": [{
+        "mechanic": "heal",
+        "target": "self",
+        "events": ["self post_attack"],
+        "parameters": {
+            "relative": 0.5,
+            "reference": "damage"
+        }
+    }]
+}, {
+    "id": 4,
+    "name": "Cleave",
+    "description": "Attacks also deal some damage to adjacent targets.",
+    "effects": [{
+        "mechanic": "damage",
+        "target": "opponent_adjacent",
+        "events": ["self post_attack"],
+        "parameters": {
+            "relative": 0.2,
+            "reference": "damage"
+        }
     }]
 }]

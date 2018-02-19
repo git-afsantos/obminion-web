@@ -93,19 +93,21 @@
     };
 
     BattleMechanics.prototype.attack = function (teamIndex) {
-        var u, t, damage, type;
+        var u, t, damage, type, atkArgs, defArgs;
         if (!arguments.length) { teamIndex = this._turn; }
         u = this._teams[teamIndex].getActive();
         damage = u.get("power");
         type = u.get("type");
         t = this._teams[(teamIndex + 1) % 2].getActive();
-        // this.trigger("attack:pre", u, t);
-        // this.trigger("battleunit:damage:pre", t, damage, type);
-        u.trigger("battleunit:attack", u);
-        t.trigger("battleunit:defend", t);
+        atkArgs = {emitter: u, target: t, damage: damage, type: type};
+        defArgs = {emitter: t, attacker: u, damage: damage, type: type};
+        u.trigger("battle:attack", atkArgs);
+        t.trigger("battle:defend", defArgs);
         damage = t.damage(damage, type);
-        // this.trigger("battleunit:damage:post", t, damage, type);
-        // this.trigger("attack:post", u, t);
+        atkArgs.damage = damage;
+        defArgs.damage = damage;
+        u.trigger("battle:post_attack", atkArgs);
+        t.trigger("battle:post_defend", defArgs);
         return this;
     };
 
@@ -143,9 +145,9 @@
         var hs = unit._handlers, i = hs.length, j;
         while (i--) {
             hs[i].stopListening();
-            j = this._handlers.indexOf(hs[i]);
+            j = this._abilities.indexOf(hs[i]);
             if (j > -1) {
-                this._handlers.splice(j, 1);
+                this._abilities.splice(j, 1);
             }
         }
     };
@@ -163,19 +165,23 @@
     BattleMechanics.prototype._targets = {
         all: function () {
             return _.bind(function () {
-                if (this._teams[0].length === 0 && this._teams[1].length === 0)
-                    return null;
                 return this._teams[0].toArray().concat(this._teams[1].toArray());
             }, this);
         },
         self: function (unit) {
-            return function () { return unit; };
+            return function () { return [unit]; };
         },
         self_left: function (unit) {
-            return function () { return unit.collection.getAtLeft(unit); };
+            return function () {
+                var u = unit.collection.getAtLeft(unit);
+                return u != null ? [u] : [];
+            };
         },
         self_right: function (unit) {
-            return function () { return unit.collection.getAtRight(unit); };
+            return function () {
+                var u = unit.collection.getAtRight(unit);
+                return u != null ? [u] : [];
+            };
         },
         self_adjacent: function (unit) {
             return function () {
@@ -183,26 +189,30 @@
                 if (c.length > 2)
                     return [c.getAtLeft(unit), c.getAtRight(unit)];
                 if (c.length > 1)
-                    return c.getAtRight(unit);
-                return null;
+                    return [c.getAtRight(unit)];
+                return [];
             };
         },
         friend_team: function (unit) {
             return function () { return unit.collection; };
         },
         friend_active: function (unit) {
-            return function () { return unit.collection.getActive(); }
+            return function () { return [unit.collection.getActive()]; }
         },
         friend_all: function (unit) {
-            return function () {
-                return unit.collection.length === 0 ? null : unit.collection.toArray();
-            };
+            return function () { return unit.collection.toArray(); };
         },
         friend_left: function (unit) {
-            return function () { return unit.collection.getAtLeft(); };
+            return function () {
+                var u = unit.collection.getAtLeft();
+                return u != null ? [u] : [];
+            };
         },
         friend_right: function (unit) {
-            return function () { return unit.collection.getAtRight(); };
+            return function () {
+                var u = unit.collection.getAtRight();
+                return u != null ? [u] : [];
+            };
         },
         friend_adjacent: function (unit) {
             return function () {
@@ -210,16 +220,16 @@
                 if (c.length > 2)
                     return [c.getAtLeft(), c.getAtRight()];
                 if (c.length > 1)
-                    return c.getAtRight();
-                return null;
+                    return [c.getAtRight()];
+                return [];
             };
         },
         friend_front: function (unit) {
             return function () {
                 var c = unit.collection;
                 switch (c.length) {
-                    case 0:     return null;
-                    case 1:     return c.getActive();
+                    case 0:     return [];
+                    case 1:     return [c.getActive()];
                     case 2:     return [c.getActive(), c.getAtRight()];
                     default:    return [c.getActive(), c.getAtRight(), c.getAtLeft()];
                 }
@@ -233,7 +243,7 @@
         },
         opponent: function (unit) {
             var c = this._opposing(unit);
-            return function () { return c.getActive(); };
+            return function () { return [c.getActive()]; };
         },
         opponent_team: function (unit) {
             var c = this._opposing(unit);
@@ -241,15 +251,21 @@
         },
         opponent_all: function (unit) {
             var c = this._opposing(unit);
-            return function () { return c.length === 0 ? null : c.toArray(); };
+            return function () { return c.toArray(); };
         },
         opponent_left: function (unit) {
             var c = this._opposing(unit);
-            return function () { return c.getAtLeft(); };
+            return function () {
+                var u = c.getAtLeft();
+                return u != null ? [u] : [];
+            };
         },
         opponent_right: function (unit) {
             var c = this._opposing(unit);
-            return function () { return c.getAtRight(); }
+            return function () {
+                var u = c.getAtRight();
+                return u != null ? [u] : [];
+            }
         },
         opponent_adjacent: function (unit) {
             var c = this._opposing(unit);
@@ -257,16 +273,16 @@
                 if (c.length > 2)
                     return [c.getAtLeft(), c.getAtRight()];
                 if (c.length > 1)
-                    return c.getAtRight();
-                return null;
+                    return [c.getAtRight()];
+                return [];
             };
         },
         opponent_front: function (unit) {
             var c = this._opposing(unit);
             return function () {
                 switch (c.length) {
-                    case 0:     return null;
-                    case 1:     return c.getActive();
+                    case 0:     return [];
+                    case 1:     return [c.getActive()];
                     case 2:     return [c.getActive(), c.getAtRight()];
                     default:    return [c.getActive(), c.getAtRight(), c.getAtLeft()];
                 }
@@ -289,10 +305,11 @@
     };
 
     BattleMechanics.prototype._createUnitAbilities = function (unit) {
+        console.log("creating handler for", unit._template.get("name"), !!unit._ability);
         if (!unit._ability) return;
         var e, i, len, aes = unit._ability.get("effects");
         for (i = 0, len = aes.length; i < len; ++i) {
-            e = new EffectHandler(this, unit, aes[i].events, aes[i].targets, aes[i].parameters);
+            e = new EffectHandler(this, unit, aes[i].events, aes[i].target, aes[i].parameters);
             e.applyEffect = e._effectHandlers[aes[i].mechanic];
             e.rebindToEvents();
             unit._handlers.push(e);
@@ -304,18 +321,16 @@
 
     ////////////////////////////////////////////////////////////////////////////
 
-    EffectHandler = function (mechanics, unit, events, targets, parameters) {
+    EffectHandler = function (mechanics, unit, events, target, parameters) {
         this.mechanics = mechanics;
         this.unit = unit;
         this.events = [];
-        this.targets = [];
+        this.target = mechanics.target(unit, target);
         this.parameters = parameters;
         for (var i = 0; i < events.length; ++i) {
             this.events.push(events[i].split(" "));
         }
-        for (i = 0; i < targets.length; ++i) {
-            this.targets.push(mechanics.target(unit, targets[i]));
-        }
+        console.log("EffectHandler", target, this.events, this.parameters);
     };
 
 
@@ -328,25 +343,43 @@
         while (i--) {
             e = this.events[i];
             t = this.mechanics.target(this.unit, e[0])();
-            if (t != null) {
-                if (t.length != null) {
-                    j = t.length;
-                    while (j--) this.listenTo(t[j], e[1], this.applyEffect);
-                } else {
-                    this.listenTo(t, e[1], this.applyEffect);
-                }
-            }
+            console.log("binding to", t, "on", "battle:" + e[1]);
+            for (j = t.length; j--;)
+                this.listenTo(t[j], "battle:" + e[1], this.applyEffect);
         }
     };
 
     EffectHandler.prototype.applyEffect = function () {};
 
     EffectHandler.prototype._effectHandlers = {
-        "log": function () {
+        log: function () {
             //this.parameters
             //this.mechanics
             //this.unit
             console.log("<ABILITY> The ability has been triggered!");
+        },
+        damage: function (args) {
+            console.log("Trigger damage");
+            var amount, damage, p = this.parameters,
+                type = p.type,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) {
+                damage = targets[i].damage(amount, type);
+            }
+        },
+        heal: function (args) {
+            var amount, damage, p = this.parameters,
+                type = p.type,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) {
+                damage = targets[i].heal(amount, type);
+            }
         }
     };
 

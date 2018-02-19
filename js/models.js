@@ -275,19 +275,26 @@
             type = type || "?";
             amount = ((models.UnitType[this.get("type")])(type))(amount);
             this.set("health", Math.max(0, this.get("health") - amount));
-            this.trigger("battleunit:damage", this, amount, type);
+            this.trigger("battle:damage", {
+                emitter: this,
+                damage: amount,
+                type: type
+            });
             return amount;
         },
 
         heal: function (amount) {
             this.set("health", Math.min(this._maxHealth.actual(), this.get("health") + amount));
-            this.trigger("battleunit:heal", this, amount);
+            this.trigger("battle:heal", {
+                emitter: this,
+                damage: amount
+            });
             return amount;
         },
 
         kill: function () {
             this.set("health", 0);
-            this.trigger("battleunit:death", this);
+            this.trigger("battle:death", {emitter: this});
         },
 
 
@@ -389,19 +396,29 @@
 
         rotateLeft: function () {
             var a = this.models,
-                m = a.shift();
+                m = a.shift(),
+                args = {
+                    emitter: this,
+                    previous: m,
+                    active: this.at(0)
+                };
             a.push(m);
-            this.trigger("battleteam:rotate", this, this.at(0), m);
-            this.trigger("battleteam:rotate:left", this, this.at(0), m);
+            this.trigger("battle:rotate", args);
+            this.trigger("battle:rotate_left", args);
             return this;
         },
 
         rotateRight: function () {
             var a = this.models,
-                m = a.pop();
+                m = a.pop(),
+                args = {
+                    emitter: this,
+                    previous: this.at(1),
+                    active: m
+                };
             a.unshift(m);
-            this.trigger("battleteam:rotate", this, m, this.at(1));
-            this.trigger("battleteam:rotate:right", this, m, this.at(1));
+            this.trigger("battle:rotate", args);
+            this.trigger("battle:rotate_right", args);
             return this;
         },
 
@@ -448,7 +465,7 @@
         effects: [{
             mechanic,
             events,
-            targets,
+            target,
             parameters
         }]
     }*/

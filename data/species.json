@@ -15,7 +15,7 @@
     "health":     50,
     "power":      8,
     "speed":      10,
-    "abilities":  []
+    "abilities":  [3]
 }, {
     "id":         3,
     "portrait":   "004",
@@ -24,7 +24,7 @@
     "health":     36,
     "power":      12,
     "speed":      12,
-    "abilities":  []
+    "abilities":  [2]
 }, {
     "id":         4,
     "portrait":   "007",
@@ -33,11 +33,11 @@
     "health":     50,
     "power":      10,
     "speed":      8,
-    "abilities":  []
+    "abilities":  [4]
 }, {
     "id":         5,
     "portrait":   "025",
-    "name":       "Test 3",
+    "name":       "Test 4",
     "type":       "BEAST",
     "health":     32,
     "power":      12,

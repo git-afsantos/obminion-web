@@ -158,9 +158,9 @@
             this.listenTo(this.collection, "reset", this.delayRender);
             this.listenTo(this.collection, "update", this.delayRender);
             this.listenTo(this.collection, "remove", this.onRemove);
-            this.listenTo(this.collection, "battleteam:rotate", this.onRotation);
-            this.listenTo(this.collection, "battleunit:attack", this.onAttack);
-            this.listenTo(this.collection, "battleunit:defend", this.onDefend);
+            this.listenTo(this.collection, "battle:rotate", this.onRotation);
+            this.listenTo(this.collection, "battle:attack", this.onAttack);
+            this.listenTo(this.collection, "battle:defend", this.onDefend);
             this.render();
         },
 
