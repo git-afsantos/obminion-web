@@ -161,6 +161,7 @@
             this.listenTo(this.collection, "battle:rotate", this.onRotation);
             this.listenTo(this.collection, "battle:attack", this.onAttack);
             this.listenTo(this.collection, "battle:defend", this.onDefend);
+            this.listenTo(this.collection, "battle:ability", this.onAbility);
             this.render();
         },
 
@@ -246,6 +247,17 @@
             });
         },
 
+        onAbility: function (args) {
+            console.log("onAbility", this.collection.id);
+            return this;
+            this.trigger("animation:enqueue", {
+                type: "ability",
+                run: this.animateAbility,
+                ctx: this,
+                parameters: [this.collection.indexOf(args.emitter)]
+            });
+        },
+
         onRotation: function () {
             console.log("onRotation", this.collection.id);
             this.trigger("animation:enqueue", {
@@ -321,6 +333,23 @@
             console.log("cleanDefend");
             this.animating = 1;
             this.$active.removeClass("animate-defend");
+            window.setTimeout(this.onAnimationEnd);
+        },
+
+        animateAbility: function (i) {
+            console.log("animateAbility");
+            var f = this.animationCallback,
+                $el = i > 0 ? this.$team.eq(i - 1) : this.$active;
+            this.animating++;
+            $el.addClass("animate-ability");
+            this.animationCallback = this.cleanAbility;
+        },
+
+        cleanAbility: function () {
+            console.log("cleanAbility");
+            this.animating = 1;
+            this.$active.removeClass("animate-ability");
+            this.$team.removeClass("animate-ability");
             window.setTimeout(this.onAnimationEnd);
         },
 
@@ -476,7 +505,7 @@
         onAnimationEnqueue: function (animation) {
             console.log("enqueue animation", animation.type);
             var a, q = this.animationQueue;
-            if (q.length > 0) {
+            if (q.length > 0 && !animation.sequential) {
                 a = q[q.length - 1];
                 if (a instanceof Array) {
                     if (a[0].type === animation.type) {
@@ -518,7 +547,7 @@
         },
 
         _runAnimation: function (animation) {
-            ++this.animating;
+            this.animating++;
             if (animation.parameters != null) {
                 animation.run.apply(animation.ctx, animation.parameters);
             } else {

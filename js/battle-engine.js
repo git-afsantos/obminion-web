@@ -1,5 +1,6 @@
 (function () {
     "use strict";
+    /* globals window:false, _:false, Backbone:false */
 
     var BattleEngine, BattleMechanics, EffectHandler,
         data = window.Game.data,
@@ -141,7 +142,7 @@
         }*/
     };
 
-    BattleMechanics.prototype.onUnitRemove = function (unit, team) {
+    BattleMechanics.prototype.onUnitRemove = function (unit) {
         var hs = unit._handlers, i = hs.length, j;
         while (i--) {
             hs[i].stopListening();
@@ -305,12 +306,11 @@
     };
 
     BattleMechanics.prototype._createUnitAbilities = function (unit) {
-        console.log("creating handler for", unit._template.get("name"), !!unit._ability);
         if (!unit._ability) return;
         var e, i, len, aes = unit._ability.get("effects");
         for (i = 0, len = aes.length; i < len; ++i) {
-            e = new EffectHandler(this, unit, aes[i].events, aes[i].target, aes[i].parameters);
-            e.applyEffect = e._effectHandlers[aes[i].mechanic];
+            e = new EffectHandler(this, unit, aes[i].events, aes[i].target, aes[i].parameters, i);
+            e.mechanic = e._effectHandlers[aes[i].mechanic];
             e.rebindToEvents();
             unit._handlers.push(e);
             this._abilities.push(e);
@@ -321,16 +321,16 @@
 
     ////////////////////////////////////////////////////////////////////////////
 
-    EffectHandler = function (mechanics, unit, events, target, parameters) {
+    EffectHandler = function (mechanics, unit, events, target, parameters, index) {
         this.mechanics = mechanics;
         this.unit = unit;
         this.events = [];
         this.target = mechanics.target(unit, target);
         this.parameters = parameters;
+        this.index = index;
         for (var i = 0; i < events.length; ++i) {
             this.events.push(events[i].split(" "));
         }
-        console.log("EffectHandler", target, this.events, this.parameters);
     };
 
 
@@ -343,13 +343,21 @@
         while (i--) {
             e = this.events[i];
             t = this.mechanics.target(this.unit, e[0])();
-            console.log("binding to", t, "on", "battle:" + e[1]);
             for (j = t.length; j--;)
-                this.listenTo(t[j], "battle:" + e[1], this.applyEffect);
+                this.listenTo(t[j], "battle:" + e[1], this.apply);
         }
     };
 
-    EffectHandler.prototype.applyEffect = function () {};
+    EffectHandler.prototype.apply = function (args) {
+        this.unit.trigger("battle:ability", {
+            emitter: this.unit,
+            ability: this.unit._ability,
+            effect: this.index
+        });
+        this.mechanic(args);
+    };
+
+    EffectHandler.prototype.mechanic = function () {};
 
     EffectHandler.prototype._effectHandlers = {
         log: function () {
@@ -359,7 +367,6 @@
             console.log("<ABILITY> The ability has been triggered!");
         },
         damage: function (args) {
-            console.log("Trigger damage");
             var amount, damage, p = this.parameters,
                 type = p.type,
                 targets = this.target(),
@@ -389,7 +396,7 @@
 
 
     BattleEngine = Backbone.Model.extend({
-        initialize: function (attr, options) {
+        initialize: function () {
             this._mechanics = new BattleMechanics();
             this._stateMachine = new window.Game.StateMachine();
             this._stateMachine.state("battle:start", this._state_initial);
