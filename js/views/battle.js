@@ -4,7 +4,352 @@
 
     var views = window.Game.Views;
 
-    views.BattleActionBar = Backbone.View.extend({
+
+
+
+    // NOTE: due to having animations we need to store additional data.
+    // The animation engine and the battle engine operate at different
+    // rates, and thus the models operated on by the engine will be in
+    // a different state than the one required by the animations.
+    // Having two sets of models, one for the engine and one for the
+    // client is an option, but it does not seem to alleviate much
+    // of the complexity regarding asynchronous event management.
+    // I think it suffices to have more ellaborate views, that keep
+    // their own variables (health, etc.).
+    // When the animation manager receives an event from the engine,
+    // it appends an animation event to the queue with all required
+    // information.
+    // When the time comes for the view to update itself, it resorts to
+    // its internal data and to the event data.
+
+
+    var BattleUnitView = views.AnimatedView.extend({
+        initialize: function () {
+            this.$img = this.$("img");
+            this.$type = this.$(".indicator-type");
+            this.$level = this.$(".indicator-level");
+            this.animations.fadeOut = this.animateFadeOut;
+            this.animations.fadeIn = this.animateFadeIn;
+            this.animations.death = this.animateDeath;
+            this.animations.attack = this.animateAttack;
+            this.animations.defend = this.animateDefend;
+            this.animations.ability = this.animateAbility;
+        },
+
+        setModel: function (model) {
+            if (this.model != null) {
+                this.stopListening(this.model);
+            }
+            this.model = model;
+            if (model != null) {
+                this.listenTo(model, "change:level", this.renderLevel);
+                this.listenTo(model, "change:type", this.renderType);
+                this.listenTo(model, "change:template", this.renderPortrait);
+            }
+            this.render();
+        },
+
+        render: function () {
+            return (this.renderLevel()
+                        .renderType()
+                        .renderPortrait());
+        },
+
+        renderLevel: function () {
+            this.$level.text("" + this.model.get("level"));
+            return this;
+        },
+
+        renderType: function () {
+            this.$type.addClass("icon-unit-0");
+            //this.$type.addClass("icon-type-" + m.get("type").toLowerCase());
+            return this;
+        },
+
+        renderPortrait: function () {
+            this.$img.attr("src", "assets/sprites/" + this.model.get("template") + ".png");
+            return this;
+        },
+
+        switchUnit: function (model) {
+            this.stopListening(this.model);
+            this.model = model;
+            this.listenTo(model, "change:level", this.renderLevel);
+            this.listenTo(model, "change:type", this.renderType);
+            this.listenTo(model, "change:template", this.renderPortrait);
+            this.pushAnimation("fadeOut");
+            this.pushAnimation("fadeIn");
+            return this;
+        },
+
+        animateFadeOut: function () {
+            this.currentAnimation.counter = 1;
+            this.$img.addClass("invisible transition-opacity");
+        },
+
+        animateFadeIn: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.removeOpacityTransition;
+            this.$img.removeClass("invisible");
+            this.renderPortrait();
+        },
+
+        removeOpacityTransition: function () {
+            this.$img.removeClass("transition-opacity");
+        },
+
+        killUnit: function () {
+            this.pushAnimation("death");
+            return this;
+        },
+
+        animateDeath: function () {
+            this.currentAnimation.counter = 1;
+            this.$img.addClass("animate-death");
+        },
+
+        attack: function () {
+            this.pushAnimation("attack");
+            return this;
+        },
+
+        animateAttack: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.endAnimateAttack;
+            this.$el.addClass("animate-attack");
+        },
+
+        endAnimateAttack: function () {
+            this.$el.removeClass("animate-attack");
+        },
+
+        defend: function () {
+            this.pushAnimation("defend");
+            return this;
+        },
+
+        animateDefend: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.endAnimateDefend;
+            this.$el.addClass("animate-defend");
+        },
+
+        endAnimateDefend: function () {
+            this.$el.removeClass("animate-defend");
+        },
+
+        useAbility: function () {
+            this.pushAnimation("ability");
+            return this;
+        },
+
+        animateAbility: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.endAnimateAbility;
+            this.$el.addClass("animate-ability");
+        },
+
+        endAnimateAbility: function () {
+            this.$el.removeClass("animate-ability");
+        }
+    });
+
+
+
+    var NameplateView = views.AnimatedView.extend({
+        initialize: function () {
+            views.AnimatedView.prototype.initialize.call(this);
+            this.$name = this.$(".unit-name");
+            this.$hpBar = this.$(".progress");
+            this.$label = this.$(".progress-label");
+            this.animations.health = this.animateHealthBar;
+        },
+
+        setModel: function (model) {
+            if (this.model != null) {
+                this.stopListening(this.model);
+            }
+            this.model = model;
+            if (model != null) {
+                this.listenTo(model, "change:health", this.onChangeHealth);
+                this.listenTo(model, "change:maxHealth", this.render);
+            }
+            this.render();
+        },
+
+        render: function() {
+            if (this.model != null) {
+                var h = this.model.get("health"),
+                    mh = this.model.get("maxHealth");
+                this.$name.text(this.model.get("name"));
+                this.$label.text("" + h + "/" + mh);
+                this.$hpBar.width("" + ((h * 100 / mh) | 0) + "%");
+            } else {
+                this.$name.text("");
+                this.$label.text("");
+                this.$hpBar.width("0");
+            }
+            return this;
+        },
+
+        onChangeHealth: function () {
+            this.pushAnimation("health");
+        },
+
+        animateHealthBar: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.endAnimateHealthBar;
+            this.$hpBar.addClass("transition");
+            this.render();
+        },
+
+        endAnimateHealthBar: function () {
+            this.$hpBar.removeClass("transition");
+        }
+    });
+
+
+
+    var BattleTeamView = views.AnimatedView.extend({
+        initialize: function () {
+            views.AnimatedView.prototype.initialize.call(this);
+            this.$portraitWrapper = this.$(".portrait-wrapper");
+            var view, $portraits = this.$(".portrait");
+            this.portraits = [];
+            for (var i = 0, len = $portraits.length; i < len; ++i) {
+                view = new BattleUnitView({ el: $portraits.eq(i) });
+                this.portraits.push(view);
+                this.listenTo(view, "animation:start", this.onChildAnimation);
+                this.listenTo(view, "animation:end", this.onAnimationEnd);
+            }
+            this.nameplate = new NameplateView({ el: this.$(".nameplate") });
+            this.listenTo(this.nameplate, "animation:start", this.onChildAnimation);
+            this.listenTo(this.nameplate, "animation:end", this.onAnimationEnd);
+            this.portraitHtml = $("#battle-unit-portrait").html().trim();
+        },
+
+        render: function () {
+            for (var i = 0, len = this.portraits.length; i < len; ++i) {
+                this.portraits[i].render();
+            }
+            this.nameplate.render();
+            return this;
+        },
+
+        animate: function () {
+            // first start its own animation: trigger start and push sub-animations
+            views.AnimatedView.prototype.animate.call(this);
+            // then animate the children: increments own animation counter
+            for (var i = 0, len = this.portraits.length; i < len; ++i) {
+                this.portraits[i].animate();
+            }
+            this.nameplate.animate();
+            // if no children is animating, skip the animation
+            if (this.currentAnimation.counter === 0) {
+                this.fakeAnimation();
+            }
+            return this;
+        },
+
+        onChildAnimation: function () {
+            ++this.currentAnimation.counter;
+        },
+
+        addUnit: function () {
+            var $portrait = $(this.portraitHtml);
+            this.$portraitWrapper.append($portrait);
+        }
+    });
+
+
+
+    var BattleView = views.BaseView.extend({
+        // This top-level view gets a list of events from the engine.
+        // Each battle event corresponds to a number of animations on the teams.
+        // The best way to go is to do one event at a time.
+        // Only when all animations from an event end will the event queue proceed.
+
+        events: {
+            "animationend": "onAnimationEnd",
+            "transitionend": "onAnimationEnd"
+        },
+
+        initialize: function () {
+            this.animating = 0;
+            this.animationQueue = [];
+            this.animationCallback = null;
+            this.teams = [
+                new BattleTeamView({ el: this.$("#player-battle-panel") }),
+                new BattleTeamView({ el: this.$("#opponent-battle-panel") })
+            ];
+            this.actionBar = new BattleActionBar({ el: this.$("#battle-action-bar") });
+        },
+
+        render: function () {
+            var i = 0, len = this.teams.length;
+            for (; i < len; ++i) {
+                this.teams[i].render();
+            }
+            this.actionBar.render();
+            return this;
+        },
+
+        onAnimationEnd: function () {
+            --this.animating;
+            if (this.animating === 0) {
+                this.animate();
+                
+                f = this.animationCallback;
+                if (f != null) {
+                    f.call(this);
+                    if (this.animationCallback === f) this.animationCallback = null;
+                } else {
+                    this.trigger("animation:end");
+                }
+            }
+        },
+
+        animate: function () {
+            var a = this.animationQueue.shift();
+            if (a == null) {
+                if (this.animationCallback != null) {
+                    this.animationCallback.call(this);
+                    this.animationCallback = null;
+                }
+            } else if (a instanceof Array) {
+                _.each(a, this._runAnimation, this);
+            } else {
+                this._runAnimation(a);
+            }
+        },
+
+        _runAnimation: function (animation) {
+            this.animating++;
+            if (animation.parameters != null) {
+                animation.run.apply(animation.ctx, animation.parameters);
+            } else {
+                animation.run.call(animation.ctx);
+            }
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var BattleActionBar = Backbone.View.extend({
         id:         "battle-action-bar",
         className:  "action-bar",
 
@@ -137,6 +482,7 @@
             _.bindAll(this, "onAnimationEnd");
             this.animationCallback = null;
             this.animating = 0;
+            this.activeCid = null;
             this.$name = this.$el.find(".unit-name");
             this.$hp = this.$el.find(".progress-label");
             this.$hpBar = this.$el.find(".progress");
@@ -168,17 +514,18 @@
 
         render: function () {
             if (!this.collection) return this;
-            this._renderActiveUnit();
+            this._renderActiveUnit(this.collection.getActive());
             this._renderTeamUnits();
             return this;
         },
 
 
-        _renderActiveUnit: function () {
-            var h, mh, m = this.collection.getActive();
+        _renderActiveUnit: function (m) {
+            var h, mh;
             if (m != null) {
                 h = m.get("health");
                 mh = m.get("maxHealth");
+                this.activeCid = m.cid;
                 this.$name.text(m._template.get("name"));
                 this.$hp.text("" + h + "/" + mh);
                 this.$hpBar.width("" + ((h * 100 / mh) | 0) + "%");
@@ -187,6 +534,7 @@
                 //this.$type.addClass("icon-type-" + m.get("type").toLowerCase());
                 this.portraits[0].show().attr("src", "assets/sprites/" + m._template.get("portrait") + ".png");
             } else {
+                this.activeCid = null;
                 this.$name.text("");
                 this.$hp.text("");
                 this.$hpBar.width("0");
@@ -249,7 +597,6 @@
 
         onAbility: function (args) {
             console.log("onAbility", this.collection.id);
-            return this;
             this.trigger("animation:enqueue", {
                 type: "ability",
                 run: this.animateAbility,
@@ -258,12 +605,13 @@
             });
         },
 
-        onRotation: function () {
+        onRotation: function (args) {
             console.log("onRotation", this.collection.id);
             this.trigger("animation:enqueue", {
                 type: "rotation",
                 run: this.animateRotationOut,
-                ctx: this
+                ctx: this,
+                parameters: [args.active, args.active.get("health")]
             });
         },
 
@@ -287,7 +635,8 @@
                 type: "death",
                 run: this.animateDeath,
                 ctx: this,
-                parameters: [options.index]
+                parameters: [options.index, collection.getActive(),
+                             collection.isAlive() ? collection.getActive().get("health"): null]
             });
         },
 
@@ -338,11 +687,23 @@
 
         animateAbility: function (i) {
             console.log("animateAbility");
-            var f = this.animationCallback,
-                $el = i > 0 ? this.$team.eq(i - 1) : this.$active;
             this.animating++;
+            var n = this.animating, $el = i > 0 ? this.$team.eq(i - 1) : this.$active;
             $el.addClass("animate-ability");
-            this.animationCallback = this.cleanAbility;
+            this.animationCallback = function () {
+                var _this = this;
+                console.log("cleanAbility");
+                this.animating = 1;
+                this.$active.removeClass("animate-ability");
+                this.$team.removeClass("animate-ability");
+                window.setTimeout(function () {
+                    var i = 1;
+                    _this.onAnimationEnd();
+                    for (; i < n; ++i) {
+                        _this.trigger("animation:end");
+                    }
+                });
+            };
         },
 
         cleanAbility: function () {
@@ -361,6 +722,7 @@
             previousHealth = (previousHealth * 100 / maxHealth) | 0;
             // there is no transition event if the width remains the same
             if (previousHealth !== currentHealth) {
+                this.$hpBar.width("" + previousHealth + "%");
                 this.$hpBar.addClass("transition");
                 this.$hpBar.width("" + currentHealth + "%");
                 this.animationCallback = this.cleanDamage;
@@ -376,7 +738,7 @@
             window.setTimeout(this.onAnimationEnd);
         },
 
-        animateRotationOut: function () {
+        animateRotationOut: function (active, newHealth) {
             console.log("animateRotationOut");
             var i = this.portraits.length;
             this.animating = 0;
@@ -384,18 +746,19 @@
                 if (this.collection.at(i) != null) ++this.animating;
                 this.portraits[i].addClass("invisible transition-opacity");
             }
-            this.animationCallback = this.animateFadeIn;
+            this.animationCallback = function () {
+                this.animateFadeIn(active, newHealth);
+            };
         },
 
-        animateDeath: function (i) {
+        animateDeath: function (i, active, newHealth) {
             console.log("animateDeath", i);
-            var _this = this;
             ++this.animating;
             this.portraits[i].addClass("animate-death");
             this.animationCallback = function () {
                 console.log("cleanDeath");
-                _this.portraits[i].removeClass("animate-death");
-                _this.animateRotationOut();
+                this.portraits[i].removeClass("animate-death");
+                this.animateRotationOut(active, newHealth);
                 if (this.animating === 0) {
                     // special case when the team was just defeated
                     this.animating = 1;
@@ -404,16 +767,25 @@
             };
         },
 
-        animateFadeIn: function () {
+        animateFadeIn: function (active, newHealth) {
             console.log("animateFadeIn");
-            var i = this.portraits.length;
+            var mh, i = this.portraits.length;
             this.animating = 0;
             while (i--) {
                 if (this.collection.at(i) != null) ++this.animating;
                 this.portraits[i].removeClass("invisible");
             }
-            this._renderActiveUnit();
+            this.activeCid = active.cid;
+            this._renderActiveUnit(active);
             this._renderTeamUnits();
+            if (active != null) {
+                mh = active.get("maxHealth");
+                this.$hp.text("" + newHealth + "/" + mh);
+                this.$hpBar.width("" + ((newHealth * 100 / mh) | 0) + "%");
+            } else {
+                this.$hp.text("");
+                this.$hpBar.width("0");
+            }
             this.animationCallback = this.cleanRotation;
             if (this.animating === 0) {
                 // special case when the team was just defeated
@@ -452,7 +824,7 @@
                 new views.BattleCircle({el: "#player-battle-panel"}),
                 new views.BattleCircle({el: "#opponent-battle-panel"})
             ];
-            this.actionBar = new views.BattleActionBar({el: "#battle-action-bar"});
+            this.actionBar = new BattleActionBar({el: "#battle-action-bar"});
             this.listenTo(this.circles[0], "animation:enqueue", this.onAnimationEnqueue);
             this.listenTo(this.circles[0], "animation:end", this.onChildAnimationEnd);
             this.listenTo(this.circles[1], "animation:enqueue", this.onAnimationEnqueue);
