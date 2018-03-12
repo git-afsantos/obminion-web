@@ -177,6 +177,7 @@
             }
             this.model = model;
             if (model != null) {
+                this.listenTo(model, "change:name", this.render);
                 this.listenTo(model, "change:health", this.onChangeHealth);
                 this.listenTo(model, "change:maxHealth", this.render);
             }
@@ -227,6 +228,7 @@
             this.listenTo(this.nameplate, "animation:end", this.onAnimationEnd);
             this.animations.waitForChildren = this.waitForChildren;
             this.animations.death = this.animateKillUnit;
+            this.animations.rotation = this.animateRotation;
         },
 
         render: function () {
@@ -256,6 +258,14 @@
             ++this.currentAnimation.counter;
         },
 
+        setTeam: function (team) {
+            for (var i = 0, len = team.length; i < len; ++i) {
+                this.spawnUnit(team[i]);
+            }
+            this.nameplate.setModel(team[0]);
+            return this;
+        },
+
         spawnUnit: function (model) {
             var view, $portrait = $(this.portraitHtml);
             this.$portraitWrapper.append($portrait);
@@ -282,6 +292,12 @@
             var i = this.currentAnimation.arguments[0];
             this.stopListening(this.portraits[i]);
             this.portraits[i].remove();
+            this.portraits.splice(i, 1);
+            if (this.portraits.length > 0) {
+                this.nameplate.setModel(this.portraits[0]);
+            } else {
+                this.nameplate.setModel(null);
+            }
         },
 
         attack: function () {
@@ -310,7 +326,7 @@
                 this.portraits[i].switchUnit(previous);
                 previous = m;
             }
-            this.pushAnimation("waitForChildren");
+            this.pushAnimation("rotation");
             return this;
         },
 
@@ -322,8 +338,16 @@
                 this.portraits[i].switchUnit(previous);
                 previous = m;
             }
-            this.pushAnimation("waitForChildren");
+            this.pushAnimation("rotation");
             return this;
+        },
+
+        animateRotation: function () {
+            this.currentAnimation.callback = this.endAnimateRotation;
+        },
+
+        endAnimateRotation: function () {
+            this.nameplate.setModel(this.portraits[0].model);
         },
 
         waitForChildren: function () {
@@ -334,7 +358,7 @@
 
 
 
-    var BattleView = views.BaseView.extend({
+    views.BattleView = views.BaseView.extend({
         // This top-level view gets a list of events from the engine.
         // Each battle event corresponds to a number of animations on the teams.
         // The best way to go is to do one event at a time.
@@ -356,6 +380,14 @@
             this.listenTo(this.teams[1], "animation:end", this.onAnimationEnd);
             this.listenTo(this.actionBar, "animation:start", this.onAnimation);
             this.listenTo(this.actionBar, "animation:end", this.onAnimationEnd);
+            this.listenTo(this.actionBar, "select:action", this.onSelectAction);
+            this.listenTo(this.model, "battle:start", this.onBattleStart);
+            this.listenTo(this.model, "battle:attack", this.onBattleAttack);
+            this.listenTo(this.model, "battle:between_rounds", this.onBattleBetweenRounds);
+            this.listenTo(this.model, "battle:victory", this.onBattleEnd);
+            this.listenTo(this.model, "battle:defeat", this.onBattleEnd);
+            this.listenTo(this.model, "request:action", this.onRequestAction);
+            this.listenTo(this.model, "battle:end_phase", this.onBattleEndPhase);
         },
 
         render: function () {
@@ -370,7 +402,7 @@
             if (this.currentEvent == null) {
                 this.currentEvent = this.eventQueue.shift();
                 if (this.currentEvent != null) {
-                    this.currentEvent.animationFunction();
+                    this.currentEvent.animationFunction.call(this);
                 }
             }
             return this;
@@ -386,6 +418,60 @@
                 this.currentEvent = null;
                 window.setTimeout(this.animate, 0);
             }
+        },
+
+        onSelectAction: function () {
+            // this.model.selectAction(this.actionBar.action);
+            // this.model.computeStep();
+        },
+
+        onBattleStart: function (playerTeam, opponentTeam) {
+            var i, len, teams = [[], []];
+            for (i = 0, len = playerTeam.length; i < len; ++i) {
+                teams[0].push(new Backbone.Model(playerTeam[i]));
+            }
+            for (i = 0, len = opponentTeam.length; i < len; ++i) {
+                teams[1].push(new Backbone.Model(opponentTeam[i]));
+            }
+            this.eventQueue.push({
+                animateFunction: this.animateBattleStart,
+                teams: teams
+            });
+        },
+
+        animateBattleStart: function () {
+            for (var i = 0, len = this.teams.length; i < len; ++i) {
+                this.teams[i].setTeam(this.currentEvent.teams[i])
+                    .render()
+                    .animate();
+            }
+        },
+
+        onBattleAttack: function () {
+            
+        },
+
+        onBattleBetweenRounds: function () {
+            
+        },
+
+        onBattleEnd: function () {
+            
+        },
+
+        onBattleEndPhase: function () {
+            
+        },
+
+        onRequestAction: function () {
+            this.eventQueue.push({
+                animationFunction: this.showActionBar
+            });
+            this.animate();
+        },
+
+        showActionBar: function () {
+            this.actionBar.show();
         }
     });
 

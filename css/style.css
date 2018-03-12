@@ -274,27 +274,101 @@ html, body {
 
 .portrait-wrapper {
     position: relative;
-    width: 100px;
-    height: 100px;
+    width: 96px;
+    height: 96px;
 }
 
 .portrait {
-    position: relative;
-    width: 96px;
-    height: 96px;
+    position: absolute;
     border-width: 2px;
     border-style: solid;
     border-radius: 50%;
-/*
-    background-position: center;
-    background-size: cover;
-*/
 }
 
 .portrait > img {
     width: 100%;
     height: 100%;
     display: none;
+}
+
+.portrait-wrapper > .portrait:first-child {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    z-index: 200;
+}
+
+.portrait-wrapper > .portrait:not(:first-child) {
+    width: 50%;
+    height: 50%;
+    z-index: 150;
+}
+
+/* second out of two items, third out of four items */
+.portrait-wrapper > .portrait:first-child:nth-last-child(2) ~ .portrait,
+.portrait-wrapper > .portrait:first-child:nth-last-child(4) ~ .portrait:nth-child(3) {
+    top: auto;
+    left: -20%;
+    right: auto;
+    bottom: -20%;
+}
+
+/* second out of two items, third out of four items */
+.mirrored .portrait-wrapper > .portrait:first-child:nth-last-child(2) ~ .portrait,
+.mirrored .portrait-wrapper > .portrait:first-child:nth-last-child(4) ~ .portrait:nth-child(3) {
+    top: -20%;
+    left: auto;
+    right: -20%;
+    bottom: auto;
+}
+
+/* second out of three items */
+.portrait-wrapper > .portrait:first-child:nth-last-child(3) ~ .portrait:nth-child(2) {
+    top: auto;
+    left: auto;
+    right: 15%;
+    bottom: -30%;
+}
+
+.mirrored .portrait-wrapper > .portrait:first-child:nth-last-child(3) ~ .portrait:nth-child(2) {
+    top: -30%;
+    left: 15%;
+    right: auto;
+    bottom: auto;
+}
+
+/* third out of three items */
+.portrait-wrapper > .portrait:first-child:nth-last-child(3) ~ .portrait:nth-child(3) {
+    top: 15%;
+    left: -30%;
+    right: auto;
+    bottom: auto;
+}
+
+.mirrored .portrait-wrapper > .portrait:first-child:nth-last-child(3) ~ .portrait:nth-child(3) {
+    top: auto;
+    left: auto;
+    right: -30%;
+    bottom: 15%;
+}
+
+/* second out of four items */
+.portrait-wrapper > .portrait:first-child:nth-last-child(4) ~ .portrait:nth-child(2) {
+    top: auto;
+    left: auto;
+    right: -20%;
+    bottom: -20%;
+}
+
+/* fourth out of four items */
+.portrait-wrapper > .portrait:first-child:nth-last-child(4) ~ .portrait:nth-child(4) {
+    top: -20%;
+    left: -20%;
+    right: auto;
+    bottom: auto;
 }
 
 
@@ -309,16 +383,6 @@ html, body {
     border-width: 2px;
     border-style: solid;
     border-radius: 50%;
-/*
-    background-position: center;
-    background-size: cover;
-*/
-}
-
-.portrait-wrapper > .icon-unit > img {
-    width: 100%;
-    height: 100%;
-    display: none;
 }
 
 
@@ -366,6 +430,10 @@ html, body {
     font-weight: bold;
     background-position: center;
     background-size: cover;
+}
+
+.portrait-wrapper > .portrait:not(:first-child) > .adornment {
+    display: none;
 }
 
 .player-panel.mirrored .portrait > .adornment.indicator-type {

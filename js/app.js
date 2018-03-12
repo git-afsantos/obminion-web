@@ -100,10 +100,9 @@ to functions of the animation manager, by this script.
             model: Game.state,
             router: Game.router
         });
-        Game.battleView = new Game.Views.BattleArea({
+        Game.battleView = new Game.Views.BattleView({
             el: $("#battle-scene"),
             model: Game.BattleEngine,
-            router: Game.router,
             state: Game.state
         });
         Game.teamView = new Game.Views.TeamView({
