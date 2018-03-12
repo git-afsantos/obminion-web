@@ -144,7 +144,7 @@
             this.$el.removeClass("animate-defend");
         },
 
-        useAbility: function () {
+        triggerAbility: function () {
             this.pushAnimation("ability");
             return this;
         },
@@ -284,6 +284,48 @@
             this.portraits[i].remove();
         },
 
+        attack: function () {
+            this.portraits[0].attack();
+            this.pushAnimation("waitForChildren");
+            return this;
+        },
+
+        defend: function () {
+            this.portraits[0].defend();
+            this.pushAnimation("waitForChildren");
+            return this;
+        },
+
+        triggerAbility: function (i) {
+            this.portraits[i].triggerAbility();
+            this.pushAnimation("waitForChildren");
+            return this;
+        },
+
+        rotateClockwise: function () {
+            var m, i = 0, len = this.portraits.length,
+                previous = this.portraits[len - 1].model;
+            for (; i < len; ++i) {
+                m = this.portraits[i].model;
+                this.portraits[i].switchUnit(previous);
+                previous = m;
+            }
+            this.pushAnimation("waitForChildren");
+            return this;
+        },
+
+        rotateCounterClockwise: function () {
+            var m, i = this.portraits.length - 1,
+                previous = this.portraits[0].model;
+            for (; i >= 0; --i) {
+                m = this.portraits[i].model;
+                this.portraits[i].switchUnit(previous);
+                previous = m;
+            }
+            this.pushAnimation("waitForChildren");
+            return this;
+        },
+
         waitForChildren: function () {
             // Counter is incremented by the child animation starting.
             // There is no callback, just wait for child animation to end.
@@ -298,66 +340,51 @@
         // The best way to go is to do one event at a time.
         // Only when all animations from an event end will the event queue proceed.
 
-        events: {
-            "animationend": "onAnimationEnd",
-            "transitionend": "onAnimationEnd"
-        },
-
         initialize: function () {
+            _.bindAll(this, "animate");
             this.animating = 0;
-            this.animationQueue = [];
-            this.animationCallback = null;
+            this.currentEvent = null;
+            this.eventQueue = [];
             this.teams = [
                 new BattleTeamView({ el: this.$("#player-battle-panel") }),
                 new BattleTeamView({ el: this.$("#opponent-battle-panel") })
             ];
             this.actionBar = new BattleActionBar({ el: this.$("#battle-action-bar") });
+            this.listenTo(this.teams[0], "animation:start", this.onAnimation);
+            this.listenTo(this.teams[0], "animation:end", this.onAnimationEnd);
+            this.listenTo(this.teams[1], "animation:start", this.onAnimation);
+            this.listenTo(this.teams[1], "animation:end", this.onAnimationEnd);
+            this.listenTo(this.actionBar, "animation:start", this.onAnimation);
+            this.listenTo(this.actionBar, "animation:end", this.onAnimationEnd);
         },
 
         render: function () {
-            var i = 0, len = this.teams.length;
-            for (; i < len; ++i) {
+            for (var i = 0, len = this.teams.length; i < len; ++i) {
                 this.teams[i].render();
             }
             this.actionBar.render();
             return this;
         },
 
+        animate: function () {
+            if (this.currentEvent == null) {
+                this.currentEvent = this.eventQueue.shift();
+                if (this.currentEvent != null) {
+                    this.currentEvent.animationFunction();
+                }
+            }
+            return this;
+        },
+
+        onAnimation: function () {
+            ++this.animating;
+        },
+
         onAnimationEnd: function () {
             --this.animating;
             if (this.animating === 0) {
-                this.animate();
-                
-                f = this.animationCallback;
-                if (f != null) {
-                    f.call(this);
-                    if (this.animationCallback === f) this.animationCallback = null;
-                } else {
-                    this.trigger("animation:end");
-                }
-            }
-        },
-
-        animate: function () {
-            var a = this.animationQueue.shift();
-            if (a == null) {
-                if (this.animationCallback != null) {
-                    this.animationCallback.call(this);
-                    this.animationCallback = null;
-                }
-            } else if (a instanceof Array) {
-                _.each(a, this._runAnimation, this);
-            } else {
-                this._runAnimation(a);
-            }
-        },
-
-        _runAnimation: function (animation) {
-            this.animating++;
-            if (animation.parameters != null) {
-                animation.run.apply(animation.ctx, animation.parameters);
-            } else {
-                animation.run.call(animation.ctx);
+                this.currentEvent = null;
+                window.setTimeout(this.animate, 0);
             }
         }
     });
