@@ -34,19 +34,10 @@
             this.animations.attack = this.animateAttack;
             this.animations.defend = this.animateDefend;
             this.animations.ability = this.animateAbility;
-        },
-
-        setModel: function (model) {
-            if (this.model != null) {
-                this.stopListening(this.model);
-            }
-            this.model = model;
-            if (model != null) {
-                this.listenTo(model, "change:level", this.renderLevel);
-                this.listenTo(model, "change:type", this.renderType);
-                this.listenTo(model, "change:template", this.renderPortrait);
-            }
-            this.render();
+            this.animations.spawn = this.animateSpawn;
+            this.listenTo(this.model, "change:level", this.renderLevel);
+            this.listenTo(this.model, "change:type", this.renderType);
+            this.listenTo(this.model, "change:template", this.renderPortrait);
         },
 
         render: function () {
@@ -69,6 +60,21 @@
         renderPortrait: function () {
             this.$img.attr("src", "assets/sprites/" + this.model.get("template") + ".png");
             return this;
+        },
+
+        spawn: function () {
+            this.pushAnimation("spawn");
+            return this;
+        },
+
+        animateSpawn: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.endAnimateSpawn;
+            this.$img.addClass("animate-spawn");
+        },
+
+        endAnimateSpawn: function () {
+            this.$img.removeClass("animate-spawn");
         },
 
         switchUnit: function (model) {
@@ -213,19 +219,14 @@
     var BattleTeamView = views.AnimatedView.extend({
         initialize: function () {
             views.AnimatedView.prototype.initialize.call(this);
-            this.$portraitWrapper = this.$(".portrait-wrapper");
-            var view, $portraits = this.$(".portrait");
             this.portraits = [];
-            for (var i = 0, len = $portraits.length; i < len; ++i) {
-                view = new BattleUnitView({ el: $portraits.eq(i) });
-                this.portraits.push(view);
-                this.listenTo(view, "animation:start", this.onChildAnimation);
-                this.listenTo(view, "animation:end", this.onAnimationEnd);
-            }
+            this.$portraitWrapper = this.$(".portrait-wrapper");
+            this.portraitHtml = $("#battle-unit-portrait").html().trim();
             this.nameplate = new NameplateView({ el: this.$(".nameplate") });
             this.listenTo(this.nameplate, "animation:start", this.onChildAnimation);
             this.listenTo(this.nameplate, "animation:end", this.onAnimationEnd);
-            this.portraitHtml = $("#battle-unit-portrait").html().trim();
+            this.animations.waitForChildren = this.waitForChildren;
+            this.animations.death = this.animateKillUnit;
         },
 
         render: function () {
@@ -255,9 +256,37 @@
             ++this.currentAnimation.counter;
         },
 
-        addUnit: function () {
-            var $portrait = $(this.portraitHtml);
+        spawnUnit: function (model) {
+            var view, $portrait = $(this.portraitHtml);
             this.$portraitWrapper.append($portrait);
+            view = new BattleUnitView({ el: $portrait, model: model });
+            this.portraits.push(view);
+            this.listenTo(view, "animation:start", this.onChildAnimation);
+            this.listenTo(view, "animation:end", this.onAnimationEnd);
+            view.render().spawn();
+            this.pushAnimation("waitForChildren");
+            return this;
+        },
+
+        killUnit: function (i) {
+            this.portraits[i].killUnit();
+            this.pushAnimation("death", i);
+            return this;
+        },
+
+        animateKillUnit: function () {
+            this.currentAnimation.callback = this.endAnimateKillUnit;
+        },
+
+        endAnimateKillUnit: function () {
+            var i = this.currentAnimation.arguments[0];
+            this.stopListening(this.portraits[i]);
+            this.portraits[i].remove();
+        },
+
+        waitForChildren: function () {
+            // Counter is incremented by the child animation starting.
+            // There is no callback, just wait for child animation to end.
         }
     });
 
