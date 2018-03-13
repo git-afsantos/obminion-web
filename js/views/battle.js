@@ -24,7 +24,9 @@
 
 
     var BattleUnitView = views.AnimatedView.extend({
-        initialize: function () {
+        initialize: function (options) {
+            this.id = options.id;
+            views.AnimatedView.prototype.initialize.call(this);
             this.$img = this.$("img");
             this.$type = this.$(".indicator-type");
             this.$level = this.$(".indicator-level");
@@ -37,7 +39,7 @@
             this.animations.spawn = this.animateSpawn;
             this.listenTo(this.model, "change:level", this.renderLevel);
             this.listenTo(this.model, "change:type", this.renderType);
-            this.listenTo(this.model, "change:template", this.renderPortrait);
+            this.listenTo(this.model, "change:portrait", this.renderPortrait);
         },
 
         render: function () {
@@ -58,7 +60,7 @@
         },
 
         renderPortrait: function () {
-            this.$img.attr("src", "assets/sprites/" + this.model.get("template") + ".png");
+            this.$img.attr("src", "assets/sprites/" + this.model.get("portrait") + ".png");
             return this;
         },
 
@@ -70,6 +72,7 @@
         animateSpawn: function () {
             this.currentAnimation.counter = 1;
             this.currentAnimation.callback = this.endAnimateSpawn;
+            this.$img.show();
             this.$img.addClass("animate-spawn");
         },
 
@@ -164,6 +167,7 @@
 
     var NameplateView = views.AnimatedView.extend({
         initialize: function () {
+            this.id = "nameplate";
             views.AnimatedView.prototype.initialize.call(this);
             this.$name = this.$(".unit-name");
             this.$hpBar = this.$(".progress");
@@ -218,7 +222,8 @@
 
 
     var BattleTeamView = views.AnimatedView.extend({
-        initialize: function () {
+        initialize: function (options) {
+            this.id = options.id;
             views.AnimatedView.prototype.initialize.call(this);
             this.portraits = [];
             this.$portraitWrapper = this.$(".portrait-wrapper");
@@ -227,8 +232,10 @@
             this.listenTo(this.nameplate, "animation:start", this.onChildAnimation);
             this.listenTo(this.nameplate, "animation:end", this.onAnimationEnd);
             this.animations.waitForChildren = this.waitForChildren;
+            this.animations.spawn = this.animateSpawn;
             this.animations.death = this.animateKillUnit;
             this.animations.rotation = this.animateRotation;
+            this.animations.health = this.animateHealth;
         },
 
         render: function () {
@@ -239,7 +246,7 @@
             return this;
         },
 
-        animate: function () {
+        /*animate: function () {
             // first start its own animation: trigger start and push sub-animations
             views.AnimatedView.prototype.animate.call(this);
             // then animate the children: increments own animation counter
@@ -252,7 +259,7 @@
                 this.fakeAnimation();
             }
             return this;
-        },
+        },*/
 
         onChildAnimation: function () {
             ++this.currentAnimation.counter;
@@ -269,13 +276,17 @@
         spawnUnit: function (model) {
             var view, $portrait = $(this.portraitHtml);
             this.$portraitWrapper.append($portrait);
-            view = new BattleUnitView({ el: $portrait, model: model });
+            view = new BattleUnitView({ el: $portrait, model: model, id: this.id + "-" + this.portraits.length });
             this.portraits.push(view);
             this.listenTo(view, "animation:start", this.onChildAnimation);
             this.listenTo(view, "animation:end", this.onAnimationEnd);
-            view.render().spawn();
-            this.pushAnimation("waitForChildren");
+            view.render();
+            this.pushAnimation("spawn", view);
             return this;
+        },
+
+        animateSpawn: function (portrait) {
+            portrait.spawn().animate();
         },
 
         killUnit: function (i) {
@@ -302,20 +313,42 @@
 
         attack: function () {
             this.portraits[0].attack();
-            this.pushAnimation("waitForChildren");
+            this.pushAnimation("waitForChildren", [this.portraits[0]]);
             return this;
         },
 
         defend: function () {
             this.portraits[0].defend();
-            this.pushAnimation("waitForChildren");
+            this.pushAnimation("waitForChildren", [this.portraits[0]]);
             return this;
         },
 
         triggerAbility: function (i) {
             this.portraits[i].triggerAbility();
-            this.pushAnimation("waitForChildren");
+            this.pushAnimation("waitForChildren", [this.portraits[i]]);
             return this;
+        },
+
+        damage: function (i, amount) {
+            if (i === 0) {
+                this.pushAnimation("health", -amount);
+            }
+            return this;
+        },
+
+        heal: function (i, amount) {
+            if (i === 0) {
+                this.pushAnimation("health", amount);
+            }
+            return this;
+        },
+
+        animateHealth: function (amount) {
+            var u = this.nameplate.model,
+                m = u.get("maxHealth"),
+                h = u.get("health");
+            u.set("health", Math.max(0, Math.min(m, h + amount)));
+            this.nameplate.animate();
         },
 
         rotateClockwise: function () {
@@ -344,15 +377,21 @@
 
         animateRotation: function () {
             this.currentAnimation.callback = this.endAnimateRotation;
+            for (var i = 0, len = this.portraits.length; i < len; ++i) {
+                this.portraits[i].animate();
+            }
         },
 
         endAnimateRotation: function () {
             this.nameplate.setModel(this.portraits[0].model);
         },
 
-        waitForChildren: function () {
+        waitForChildren: function (children) {
             // Counter is incremented by the child animation starting.
             // There is no callback, just wait for child animation to end.
+            for (var i = 0, len = children.length; i < len; ++i) {
+                children[i].animate();
+            }
         }
     });
 
@@ -365,13 +404,13 @@
         // Only when all animations from an event end will the event queue proceed.
 
         initialize: function () {
-            _.bindAll(this, "animate");
+            _.bindAll(this, "animate", "nextStep");
             this.animating = 0;
             this.currentEvent = null;
             this.eventQueue = [];
             this.teams = [
-                new BattleTeamView({ el: this.$("#player-battle-panel") }),
-                new BattleTeamView({ el: this.$("#opponent-battle-panel") })
+                new BattleTeamView({ el: this.$("#player-battle-panel"), id: "team-1" }),
+                new BattleTeamView({ el: this.$("#opponent-battle-panel"), id: "team-2" })
             ];
             this.actionBar = new BattleActionBar({ el: this.$("#battle-action-bar") });
             this.listenTo(this.teams[0], "animation:start", this.onAnimation);
@@ -388,6 +427,10 @@
             this.listenTo(this.model, "battle:defeat", this.onBattleEnd);
             this.listenTo(this.model, "request:action", this.onRequestAction);
             this.listenTo(this.model, "battle:end_phase", this.onBattleEndPhase);
+            this.listenTo(this.model, "attack", this.onAttack);
+            this.listenTo(this.model, "ability", this.onAbility);
+            this.listenTo(this.model, "damage", this.onDamage);
+            this.listenTo(this.model, "heal", this.onHeal);
         },
 
         render: function () {
@@ -403,6 +446,10 @@
                 this.currentEvent = this.eventQueue.shift();
                 if (this.currentEvent != null) {
                     this.currentEvent.animationFunction.call(this);
+                    if (this.animating === 0) {
+                        this.currentEvent = null;
+                        window.setTimeout(this.animate, 0);
+                    }
                 }
             }
             return this;
@@ -421,11 +468,11 @@
         },
 
         onSelectAction: function () {
-            // this.model.selectAction(this.actionBar.action);
-            // this.model.computeStep();
+            this.model.selectAction(this.actionBar.action);
+            //this.model.computeStep();
         },
 
-        onBattleStart: function (playerTeam, opponentTeam) {
+        onBattleStart: function (engine, playerTeam, opponentTeam) {
             var i, len, teams = [[], []];
             for (i = 0, len = playerTeam.length; i < len; ++i) {
                 teams[0].push(new Backbone.Model(playerTeam[i]));
@@ -434,7 +481,7 @@
                 teams[1].push(new Backbone.Model(opponentTeam[i]));
             }
             this.eventQueue.push({
-                animateFunction: this.animateBattleStart,
+                animationFunction: this.animateBattleStart,
                 teams: teams
             });
         },
@@ -456,11 +503,77 @@
         },
 
         onBattleEnd: function () {
-            
+            this.animate();
         },
 
         onBattleEndPhase: function () {
-            
+            window.setTimeout(this.nextStep, 0);
+        },
+
+        onAttack: function (attackTeamIndex, defendTeamIndex) {
+            this.eventQueue.push({
+                animationFunction: this.animateAttack,
+                attacker: attackTeamIndex,
+                defender: defendTeamIndex
+                
+            });
+        },
+
+        animateAttack: function () {
+            this.teams[this.currentEvent.attacker].attack().animate();
+            this.teams[this.currentEvent.defender].defend().animate();
+        },
+
+        onAbility: function (teamIndex, unitIndex, abilityName) {
+            this.eventQueue.push({
+                animationFunction: this.animateAbility,
+                team: teamIndex,
+                unit: unitIndex,
+                ability: abilityName
+            });
+        },
+
+        animateAbility: function () {
+            var team = this.currentEvent.team,
+                unit = this.currentEvent.unit,
+                ability = this.currentEvent.ability;
+            this.teams[team].triggerAbility(unit, ability).animate();
+        },
+
+        onDamage: function (teamIndex, unitIndex, amount, type) {
+            this.eventQueue.push({
+                animationFunction: this.animateDamage,
+                team: teamIndex,
+                unit: unitIndex,
+                amount: amount,
+                type: type
+            });
+        },
+
+        animateDamage: function () {
+            var team = this.currentEvent.team,
+                unit = this.currentEvent.unit,
+                amount = this.currentEvent.amount,
+                type = this.currentEvent.type;
+            this.teams[team].damage(unit, amount, type).animate();
+        },
+
+        onHeal: function (teamIndex, unitIndex, amount, type) {
+            this.eventQueue.push({
+                animationFunction: this.animateHeal,
+                team: teamIndex,
+                unit: unitIndex,
+                amount: amount,
+                type: type
+            });
+        },
+
+        animateHeal: function () {
+            var team = this.currentEvent.team,
+                unit = this.currentEvent.unit,
+                amount = this.currentEvent.amount,
+                type = this.currentEvent.type;
+            this.teams[team].heal(unit, amount, type).animate();
         },
 
         onRequestAction: function () {
@@ -472,6 +585,10 @@
 
         showActionBar: function () {
             this.actionBar.show();
+        },
+
+        nextStep: function () {
+            this.model.computeStep();
         }
     });
 

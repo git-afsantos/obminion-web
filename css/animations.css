@@ -126,7 +126,7 @@ https://cssanimation.rocks/principles/
 
 
 
-.animate-summon {
+.animate-spawn {
     animation-name: zoomIn;
     animation-duration: 0.5s;
     animation-timing-function: cubic-bezier(.57,-0.5,.43,1.95);

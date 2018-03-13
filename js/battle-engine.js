@@ -104,7 +104,9 @@
         defArgs = {emitter: t, attacker: u, damage: damage, type: type};
         u.trigger("battle:attack", atkArgs);
         t.trigger("battle:defend", defArgs);
+        this.trigger("attack", u, t);
         damage = t.damage(damage, type);
+        this.trigger("damage", t, damage, type);
         atkArgs.damage = damage;
         defArgs.damage = damage;
         u.trigger("battle:post_attack", atkArgs);
@@ -344,16 +346,17 @@
             e = this.events[i];
             t = this.mechanics.target(this.unit, e[0])();
             for (j = t.length; j--;)
-                this.listenTo(t[j], "battle:" + e[1], this.apply);
+                this.listenTo(t[j], "battle:" + e[1], this.triggerEffect);
         }
     };
 
-    EffectHandler.prototype.apply = function (args) {
+    EffectHandler.prototype.triggerEffect = function (args) {
         this.unit.trigger("battle:ability", {
             emitter: this.unit,
             ability: this.unit._ability,
             effect: this.index
         });
+        this.mechanics.trigger("ability", this.unit, this.unit._ability);
         this.mechanic(args);
     };
 
@@ -375,6 +378,7 @@
             else amount = (p.relative * args[p.reference]) | 0;
             while (i--) {
                 damage = targets[i].damage(amount, type);
+                this.mechanics.trigger("damage", targets[i], damage, type);
             }
         },
         heal: function (args) {
@@ -386,6 +390,7 @@
             else amount = (p.relative * args[p.reference]) | 0;
             while (i--) {
                 damage = targets[i].heal(amount, type);
+                this.mechanics.trigger("heal", targets[i], damage, type);
             }
         }
     };
@@ -405,6 +410,15 @@
             this._stateMachine.state("battle:between_rounds", this._state_between_rounds);
             this._stateMachine.state("battle:victory", this._state_victory);
             this._stateMachine.state("battle:defeat", this._state_defeat);
+            this.listenTo(this._mechanics, "attack", this._onAttack);
+            this.listenTo(this._mechanics, "ability", this._onAbility);
+            this.listenTo(this._mechanics, "damage", this._onDamage);
+            this.listenTo(this._mechanics, "heal", this._onHeal);
+        },
+
+        isBattling: function () {
+            var s = this._stateMachine.state();
+            return s != "battle:victory" && s != "battle:defeat";
         },
 
         createBattle: function (player, opponent) {
@@ -462,7 +476,9 @@
 
         _state_initial: function () {
 //            console.log("Starting battle.");
-            this.trigger("battle:start", this);
+            this.trigger("battle:start", this,
+                         this._mechanics.team(0).toSimplifiedJSON(),
+                         this._mechanics.team(1).toSimplifiedJSON());
             this.set("state", "battle:start");
             this._mechanics.createAbilityHandlers();
             this.trigger("battle:end_phase", this);
@@ -481,7 +497,7 @@
             this.trigger("battle:attack", this);
             this.set("state", "battle:attack");
             this._mechanics.calculateTurn().attack();
-            this.trigger("attack", this, this._mechanics.attacker(), this._mechanics.defender());
+            //this.trigger("attack", this, this._mechanics.attacker(), this._mechanics.defender());
 //            console.log("Player  ", "" + this._mechanics.activeUnit(0).get("health") +
 //                        "/" + this._mechanics.activeUnit(0).get("maxHealth"), "HP");
 //            console.log("Opponent", "" + this._mechanics.activeUnit(1).get("health") +
@@ -499,7 +515,7 @@
             // cleanup() places another guy into position, if there's one available.
             // Revenge!
             this._mechanics.flipTurn().attack();
-            this.trigger("attack", this, this._mechanics.attacker(), this._mechanics.defender());
+            //this.trigger("attack", this, this._mechanics.attacker(), this._mechanics.defender());
 //            console.log("Player  ", "" + this._mechanics.activeUnit(0).get("health") +
 //                        "/" + this._mechanics.activeUnit(0).get("maxHealth"), "HP");
 //            console.log("Opponent", "" + this._mechanics.activeUnit(1).get("health") +
@@ -552,6 +568,25 @@
             this.trigger("battle:defeat", this);
             this.set("state", "battle:defeat");
             this.trigger("battle:end_phase", this);
+        },
+
+        _onAttack: function (attacker, defender) {
+            this.trigger("attack", attacker.collection._teamId, defender.collection._teamId);
+        },
+
+        _onAbility: function (unit, ability) {
+            this.trigger("ability", unit.collection._teamId, unit.collection.indexOf(unit),
+                         ability.get("name"));
+        },
+
+        _onDamage: function (unit, amount, type) {
+            this.trigger("damage", unit.collection._teamId, unit.collection.indexOf(unit),
+                         amount, type);
+        },
+
+        _onHeal: function (unit, amount, type) {
+            this.trigger("heal", unit.collection._teamId, unit.collection.indexOf(unit),
+                         amount, type);
         },
 
         toJSON: function () {

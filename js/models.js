@@ -336,6 +336,22 @@
             json.power = this._power.toJSON();
             json.speed = this._speed.toJSON();
             return json;
+        },
+
+        toSimplifiedJSON: function () {
+            return {
+                id: this.id,
+                name: this._template.get("name"),
+                portrait: this._template.get("portrait"),
+                template: this._template.id,
+                level: this._instance.get("level"),
+                type: this.get("type"),
+                health: this.get("health"),
+                maxHealth: this.get("maxHealth"),
+                power: this.get("power"),
+                speed: this.get("speed"),
+                ability: this.get("ability")
+            };
         }
     }, {
         fromUnitInstance: function (unit, abilities) {
@@ -443,6 +459,12 @@
 
         _predicate_isDead: function (m) {
             return !m.isAlive();
+        },
+
+        toSimplifiedJSON: function () {
+            return this.map(function (model) {
+                return model.toSimplifiedJSON();
+            });
         }
     }, {
         fromUnitTeam: function (team, abilities) {

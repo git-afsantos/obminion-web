@@ -106,6 +106,9 @@
                 if (this.currentAnimation != null) {
                     this.currentAnimation.start(this);
                     this.trigger("animation:start", this);
+                    if (this.currentAnimation.counter === 0) {
+                        this.fakeAnimation();
+                    }
                 }
             }
             return this;
@@ -129,12 +132,6 @@
             } else {
                 this.trigger("animation:end", this);
             }
-            /*
-            this.currentAnimation = null;
-            if (this.animationQueue.length > 0) {
-                // Not sure if this stays here or moves up to the caller.
-                window.setTimeout(this.animate, 0);
-            }*/
         },
 
         fakeAnimation: function () {

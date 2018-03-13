@@ -45,6 +45,9 @@
                 if (Game.view != null) Game.view.hide();
                 Game.battleView.show().build([Game.state.playerTeam, Game.state.opponentTeam]);
                 Game.view = Game.battleView;
+                Game.battleView.model.createBattle(Game.state.playerTeam, Game.state.opponentTeam);
+                Game.battleView.model.computeStep();
+                Game.battleView.render();
             },
 
             research: function(what) {
