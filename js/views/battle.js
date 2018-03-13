@@ -37,6 +37,7 @@
             this.animations.defend = this.animateDefend;
             this.animations.ability = this.animateAbility;
             this.animations.spawn = this.animateSpawn;
+            this.animations.reposition = this.animateReposition;
             this.listenTo(this.model, "change:level", this.renderLevel);
             this.listenTo(this.model, "change:type", this.renderType);
             this.listenTo(this.model, "change:portrait", this.renderPortrait);
@@ -160,6 +161,21 @@
 
         endAnimateAbility: function () {
             this.$el.removeClass("animate-ability");
+        },
+
+        reposition: function () {
+            this.pushAnimation("reposition");
+            return this;
+        },
+
+        animateReposition: function () {
+            //this.currentAnimation.counter = 1;
+            //this.currentAnimation.callback = this.endAnimateReposition;
+            //this.$el.addClass("invisible transition-opacity");
+        },
+
+        endAnimateReposition: function () {
+            //this.$el.removeClass("invisible transition-opacity");
         }
     });
 
@@ -234,6 +250,7 @@
             this.animations.waitForChildren = this.waitForChildren;
             this.animations.spawn = this.animateSpawn;
             this.animations.death = this.animateKillUnit;
+            this.animations.reposition = this.animateReposition;
             this.animations.rotation = this.animateRotation;
             this.animations.health = this.animateHealth;
         },
@@ -289,14 +306,15 @@
             portrait.spawn().animate();
         },
 
-        killUnit: function (i) {
-            this.pushAnimation("death", i);
+        killUnit: function (index) {
+            this.pushAnimation("death", index);
+            //this.pushAnimation("reposition", index);
             return this;
         },
 
-        animateKillUnit: function (i) {
+        animateKillUnit: function (index) {
             this.currentAnimation.callback = this.endAnimateKillUnit;
-            this.portraits[i].killUnit().animate();
+            this.portraits[index].killUnit().animate();
         },
 
         endAnimateKillUnit: function () {
@@ -308,6 +326,14 @@
                 this.nameplate.setModel(this.portraits[0].model);
             } else {
                 this.nameplate.setModel(null);
+            }
+        },
+
+        animateReposition: function (index) {
+            for (var i = 0; i < this.portraits.length; ++i) {
+                if (i !== index) {
+                    this.portraits[i].reposition().animate();
+                }
             }
         },
 
@@ -384,14 +410,10 @@
         },
 
         animateRotation: function () {
-            this.currentAnimation.callback = this.endAnimateRotation;
             for (var i = 0, len = this.portraits.length; i < len; ++i) {
                 this.portraits[i].animate();
             }
             this.nameplate.setModel(this.portraits[0].model);
-        },
-
-        endAnimateRotation: function () {
         },
 
         waitForChildren: function (children) {
