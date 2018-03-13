@@ -144,7 +144,7 @@
         }*/
     };
 
-    BattleMechanics.prototype.onUnitRemove = function (unit) {
+    BattleMechanics.prototype.onUnitRemove = function (unit, team, options) {
         var hs = unit._handlers, i = hs.length, j;
         while (i--) {
             hs[i].stopListening();
@@ -153,6 +153,7 @@
                 this._abilities.splice(j, 1);
             }
         }
+        this.trigger("death", unit, team, options.index);
     };
 
     BattleMechanics.prototype._opposing = function (unit) {
@@ -412,6 +413,7 @@
             this._stateMachine.state("battle:defeat", this._state_defeat);
             this.listenTo(this._mechanics, "attack", this._onAttack);
             this.listenTo(this._mechanics, "ability", this._onAbility);
+            this.listenTo(this._mechanics, "death", this._onDeath);
             this.listenTo(this._mechanics, "damage", this._onDamage);
             this.listenTo(this._mechanics, "heal", this._onHeal);
         },
@@ -447,12 +449,14 @@
                     if (team.canRotate()) {
 //                        console.log("Rotating left.");
                         team.rotateLeft();
+                        this.trigger("rotation:left", 0);
                     }
                     break;
                 case "ROTATE_CLOCK":
                     if (team.canRotate()) {
 //                        console.log("Rotating right.");
                         team.rotateRight();
+                        this.trigger("rotation:right", 0);
                     }
                     break;
                 case "ATTACK":
@@ -560,14 +564,14 @@
 //            console.log("Victory.");
             this.trigger("battle:victory", this);
             this.set("state", "battle:victory");
-            this.trigger("battle:end_phase", this);
+            //this.trigger("battle:end_phase", this);
         },
 
         _state_defeat: function () {
 //            console.log("Defeat.");
             this.trigger("battle:defeat", this);
             this.set("state", "battle:defeat");
-            this.trigger("battle:end_phase", this);
+            //this.trigger("battle:end_phase", this);
         },
 
         _onAttack: function (attacker, defender) {
@@ -577,6 +581,10 @@
         _onAbility: function (unit, ability) {
             this.trigger("ability", unit.collection._teamId, unit.collection.indexOf(unit),
                          ability.get("name"));
+        },
+
+        _onDeath: function (unit, team, index) {
+            this.trigger("death", team._teamId, index);
         },
 
         _onDamage: function (unit, amount, type) {

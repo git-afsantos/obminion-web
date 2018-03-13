@@ -290,13 +290,13 @@
         },
 
         killUnit: function (i) {
-            this.portraits[i].killUnit();
             this.pushAnimation("death", i);
             return this;
         },
 
-        animateKillUnit: function () {
+        animateKillUnit: function (i) {
             this.currentAnimation.callback = this.endAnimateKillUnit;
+            this.portraits[i].killUnit().animate();
         },
 
         endAnimateKillUnit: function () {
@@ -305,7 +305,7 @@
             this.portraits[i].remove();
             this.portraits.splice(i, 1);
             if (this.portraits.length > 0) {
-                this.nameplate.setModel(this.portraits[0]);
+                this.nameplate.setModel(this.portraits[0].model);
             } else {
                 this.nameplate.setModel(null);
             }
@@ -332,6 +332,9 @@
         damage: function (i, amount) {
             if (i === 0) {
                 this.pushAnimation("health", -amount);
+            } else {
+                var u = this.portraits[i].model, h = u.get("health");
+                u.set("health", Math.max(0, h - amount));
             }
             return this;
         },
@@ -339,6 +342,11 @@
         heal: function (i, amount) {
             if (i === 0) {
                 this.pushAnimation("health", amount);
+            } else {
+                var u = this.portraits[i].model,
+                    m = u.get("maxHealth"),
+                    h = u.get("health");
+                u.set("health", Math.min(m, h + amount));
             }
             return this;
         },
@@ -429,6 +437,9 @@
             this.listenTo(this.model, "battle:end_phase", this.onBattleEndPhase);
             this.listenTo(this.model, "attack", this.onAttack);
             this.listenTo(this.model, "ability", this.onAbility);
+            this.listenTo(this.model, "death", this.onDeath);
+            this.listenTo(this.model, "rotation:left", this.onRotateCounterClockwise);
+            this.listenTo(this.model, "rotation:right", this.onRotateClockwise);
             this.listenTo(this.model, "damage", this.onDamage);
             this.listenTo(this.model, "heal", this.onHeal);
         },
@@ -503,7 +514,17 @@
         },
 
         onBattleEnd: function () {
+            this.eventQueue.push({
+                animationFunction: this.deferLeave
+            });
             this.animate();
+        },
+
+        deferLeave: function () {
+            var _this = this;
+            window.setTimeout(function () {
+                _this.hide();
+            }, 1000);
         },
 
         onBattleEndPhase: function () {
@@ -538,6 +559,42 @@
                 unit = this.currentEvent.unit,
                 ability = this.currentEvent.ability;
             this.teams[team].triggerAbility(unit, ability).animate();
+        },
+
+        onDeath: function (teamIndex, unitIndex) {
+            this.eventQueue.push({
+                animationFunction: this.animateDeath,
+                team: teamIndex,
+                unit: unitIndex
+            });
+        },
+
+        animateDeath: function () {
+            var team = this.currentEvent.team,
+                unit = this.currentEvent.unit;
+            this.teams[team].killUnit(unit).animate();
+        },
+
+        onRotateClockwise: function (teamIndex) {
+            this.eventQueue.push({
+                animationFunction: this.animateRotateClockwise,
+                team: teamIndex
+            });
+        },
+
+        animateRotateClockwise: function () {
+            this.teams[this.currentEvent.team].rotateClockwise().animate();
+        },
+
+        onRotateCounterClockwise: function (teamIndex) {
+            this.eventQueue.push({
+                animationFunction: this.animateRotateCounterClockwise,
+                team: teamIndex
+            });
+        },
+
+        animateRotateCounterClockwise: function () {
+            this.teams[this.currentEvent.team].rotateCounterClockwise().animate();
         },
 
         onDamage: function (teamIndex, unitIndex, amount, type) {
