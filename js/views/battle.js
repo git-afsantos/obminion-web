@@ -278,6 +278,14 @@
             return this;
         },*/
 
+        reset: function () {
+            for (var i = 0, len = this.portraits.length; i < len; ++i) {
+                this.stopListening(this.portraits[i]);
+                this.portraits[i].remove();
+            }
+            this.portraits = [];
+        },
+
         onChildAnimation: function () {
             ++this.currentAnimation.counter;
         },
@@ -468,6 +476,14 @@
             this.listenTo(this.model, "rotation:right", this.onRotateClockwise);
             this.listenTo(this.model, "damage", this.onDamage);
             this.listenTo(this.model, "heal", this.onHeal);
+        },
+
+        build: function () {
+            for (var i = 0, len = this.teams.length; i < len; ++i) {
+                this.teams[0].reset();
+                this.teams[1].reset();
+            }
+            return this;
         },
 
         leave: function () {
