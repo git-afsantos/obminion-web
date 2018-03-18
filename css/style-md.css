@@ -1,0 +1,81 @@
+@media screen and (min-width: 40em) and (min-height: 30em) {
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 40em;
+    max-height: 30em;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+}
+
+#battle-scene > .player-panel {
+    position: relative;
+    height: 45%;
+    min-height: 12em;
+    padding: 0 1em;
+}
+
+#battle-scene > .action-bar {
+    top: auto;
+    bottom: 1em;
+    left: auto;
+    right: 1em;
+}
+
+.portrait-wrapper {
+    position: relative;
+    width: 8em;
+    height: 8em;
+}
+
+.portrait > .adornment {
+    width: 2em;
+    height: 2em;
+    line-height: 2em;
+    font-size: 1.25em;
+    margin-top: -1em;
+    margin-left: -1em;
+}
+
+.player-panel > .portrait-wrapper {
+    position: absolute;
+    left: 2.5em;
+    bottom: 2.5em;
+}
+
+.player-panel.mirrored > .portrait-wrapper {
+    position: absolute;
+    top: 2.5em;
+    left: auto;
+    right: 2.5em;
+    bottom: auto;
+}
+
+.player-panel.mirrored .portrait > .adornment.indicator-type {
+    transform: rotate(160deg) translate(3.75em) rotate(-160deg);
+}
+
+.player-panel.mirrored .portrait > .adornment.indicator-level {
+    transform: rotate(110deg) translate(3.75em) rotate(-110deg);
+}
+
+.player-panel .portrait > .adornment.indicator-type {
+    transform: rotate(290deg) translate(3.75em) rotate(-290deg);
+}
+
+.player-panel .portrait > .adornment.indicator-level {
+    transform: rotate(340deg) translate(3.75em) rotate(-340deg);
+}
+
+.player-panel > .nameplate {
+    left: 13em;
+    bottom: 5em;
+}
+
+.player-panel.mirrored > .nameplate {
+    top: 3em;
+    right: 13em;
+}
+}

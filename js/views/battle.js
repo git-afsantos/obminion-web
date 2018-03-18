@@ -455,6 +455,7 @@
                 new BattleTeamView({ el: this.$("#opponent-battle-panel"), id: "team-2" })
             ];
             this.actionBar = new BattleActionBar({ el: this.$("#battle-action-bar") });
+            this.notifications = new BattleNotifications({ el: this.$("#battle-notification-panel") });
             this.listenTo(this.teams[0], "animation:start", this.onAnimation);
             this.listenTo(this.teams[0], "animation:end", this.onAnimationEnd);
             this.listenTo(this.teams[1], "animation:start", this.onAnimation);
@@ -462,6 +463,8 @@
             this.listenTo(this.actionBar, "animation:start", this.onAnimation);
             this.listenTo(this.actionBar, "animation:end", this.onAnimationEnd);
             this.listenTo(this.actionBar, "select:action", this.onSelectAction);
+            this.listenTo(this.notifications, "animation:start", this.onAnimation);
+            this.listenTo(this.notifications, "animation:end", this.onAnimationEnd);
             this.listenTo(this.model, "battle:start", this.onBattleStart);
             this.listenTo(this.model, "battle:attack", this.onBattleAttack);
             this.listenTo(this.model, "battle:between_rounds", this.onBattleBetweenRounds);
@@ -552,13 +555,9 @@
             }
         },
 
-        onBattleAttack: function () {
-            
-        },
+        onBattleAttack: function () {},
 
-        onBattleBetweenRounds: function () {
-            
-        },
+        onBattleBetweenRounds: function () {},
 
         onBattleEnd: function () {
             this.eventQueue.push({
@@ -587,6 +586,7 @@
         animateAttack: function () {
             this.teams[this.currentEvent.attacker].attack().animate();
             this.teams[this.currentEvent.defender].defend().animate();
+            this.notifications.showNotification("Team " + this.currentEvent.attacker + " attacks team " + this.currentEvent.defender + ".").animate();
         },
 
         onAbility: function (teamIndex, unitIndex, abilityName) {
@@ -794,34 +794,41 @@
     });
 
 
-    views.BattleNotifications = Backbone.View.extend({
+    var BattleNotifications = views.AnimatedView.extend({
         initialize: function () {
-            _.bindAll(this, "showNotification", "hideNotification", "removeNotification");
-            this.unseen = [];
-            this.seen = [];
+            this.id = "notifications";
+            views.AnimatedView.prototype.initialize.call(this);
+            this.msgs = [];
+            this.animations.show = this.animateShowNotification;
+            this.animations.showAll = this.animateShowNotifications;
         },
 
-        addNotification: function (message) {
-            var $li = $("<li class=\"notification\">" + message + "</li>");
-            this.$el.append($li);
-            this.unseen.push($li);
-            window.setTimeout(this.showNotification);
+        showNotification: function (msg) {
+            this.msgs.push(msg);
+            this.pushAnimation("show");
+            return this;
         },
 
-        showNotification: function () {
-            var i = this.unseen.shift();
-            i.addClass("show");
-            this.seen.push(i);
-            window.setTimeout(this.hideNotification, 5000);
+        animateShowNotification: function () {
+            this.currentAnimation.counter = 1;
+            this.currentAnimation.callback = this.endAnimateShowNotifications;
+            this.$el.append($('<p class="notification animate-floating-text">'
+                              + this.msgs.shift() + "</p>"));
         },
 
-        hideNotification: function () {
-            this.seen.shift().removeClass("show");
-            window.setTimeout(this.removeNotification, 1000);
+        animateShowNotifications: function () {
+            var i = 0, len = this.msgs.length;
+            this.currentAnimation.counter = len;
+            this.currentAnimation.callback = this.endAnimateShowNotifications;
+            for (; i < len; ++i) {
+                this.$el.append($('<p class="notification animate-floating-text">'
+                                  + this.msgs[i] + "</p>"));
+            }
+            this.msgs = [];
         },
 
-        removeNotification: function () {
-            this.$el.children().first().remove();
+        endAnimateShowNotifications: function () {
+            this.$el.empty();
         }
     });
 })();

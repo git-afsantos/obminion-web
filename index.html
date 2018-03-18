@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/type.css" />
     <link rel="stylesheet" href="css/color.css" />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/style-md.css" />
     <link rel="stylesheet" href="css/sprites.css" />
     <link rel="stylesheet" href="css/animations.css" />
 
@@ -76,6 +77,7 @@
                 <button id="battle-button-rotate-cw" class="pure-button">Right</button>
                 <button id="battle-button-surrender" class="pure-button">Run</button>
             </div>
+            <div id="battle-notification-panel"></div>
         </section>
         <section id="team-menu">
             <div id="team-player-panel">
@@ -155,8 +157,8 @@
         </div>
     </script>
     <script id="team-info-panel-content" type="text/template">
+        <span class="detail pull-right">Lv. <%= data.level %> <%= data.type %></span>
         <h4><%= data.name %></h4>
-        <span class="detail">Lv. <%= data.level %>, Type: <%= data.type %></span>
         <div class="progress-bar small">
             <div class="progress" style="width: <%= data.xp / (data.maxxp || 1) %>%"></div>
             <div class="progress-label"><%= data.xp %> / <%= data.maxxp %> XP</div>

@@ -163,13 +163,15 @@ html, body {
     text-align: center;
 }
 
-@media (min-height: 480px) {
-    #battle-scene > .action-bar {
-        top: 70%;
-        bottom: auto;
-        left: 0;
-        right: 0;
-    }
+#battle-notification-panel {
+    position: absolute;
+    height: 2em;
+    top: 45%;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    z-index: 300;
+    text-align: center;
 }
 
 
@@ -185,6 +187,10 @@ html, body {
     border-width: 2px;
     border-style: solid;
     border-radius: 50%;
+}
+
+#team-player-panel .portrait {
+    overflow: hidden;
 }
 
 .portrait > img {
@@ -271,48 +277,6 @@ html, body {
     left: -20%;
     right: auto;
     bottom: auto;
-}
-
-
-.portrait-wrapper > .icon-unit {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 48px;
-    height: 48px;
-    margin-top: -25px;
-    margin-left: -25px;
-    border-width: 2px;
-    border-style: solid;
-    border-radius: 50%;
-}
-
-
-.player-panel.mirrored .portrait-wrapper > .pos-2-4 {
-    transform: rotate(240deg) translate(64px) rotate(-240deg);
-}
-
-.player-panel.mirrored .portrait-wrapper > .pos-3-4 {
-    transform: rotate(315deg) translate(64px) rotate(-315deg);
-}
-
-.player-panel.mirrored .portrait-wrapper > .pos-4-4 {
-    transform: rotate(30deg) translate(62px) rotate(-30deg);
-}
-
-.player-panel .portrait-wrapper > .pos-2-4,
-#team-player-panel .portrait-wrapper > .pos-2-4 {
-    transform: rotate(60deg) translate(62px) rotate(-60deg);
-}
-
-.player-panel .portrait-wrapper > .pos-3-4,
-#team-player-panel .portrait-wrapper > .pos-3-4 {
-    transform: rotate(135deg) translate(64px) rotate(-135deg);
-}
-
-.player-panel .portrait-wrapper > .pos-4-4,
-#team-player-panel .portrait-wrapper > .pos-4-4 {
-    transform: rotate(210deg) translate(64px) rotate(-210deg);
 }
 
 
@@ -408,105 +372,6 @@ html, body {
 
 
 
-
-@media (min-width: 640px) and (min-height: 480px) {
-    .portrait-wrapper {
-        width: 136px;
-        height: 136px;
-    }
-
-    .portrait {
-        width: 128px;
-        height: 128px;
-        border-width: 4px;
-    }
-
-    .portrait-wrapper > .icon-unit {
-        width: 64px;
-        height: 64px;
-        margin-top: -33px;  /* +1 for border */
-        margin-left: -33px;
-    }
-
-    .player-panel.mirrored .portrait-wrapper > .pos-2-4 {
-        transform: rotate(240deg) translate(92px) rotate(-240deg);
-    }
-
-    .player-panel.mirrored .portrait-wrapper > .pos-3-4 {
-        transform: rotate(315deg) translate(90px) rotate(-315deg);
-    }
-
-    .player-panel.mirrored .portrait-wrapper > .pos-4-4 {
-        transform: rotate(30deg) translate(88px) rotate(-30deg);
-    }
-
-    .player-panel .portrait-wrapper > .pos-2-4,
-    #team-player-panel .portrait-wrapper > .pos-2-4 {
-        transform: rotate(60deg) translate(88px) rotate(-60deg);
-    }
-
-    .player-panel .portrait-wrapper > .pos-3-4,
-    #team-player-panel .portrait-wrapper > .pos-3-4 {
-        transform: rotate(135deg) translate(90px) rotate(-135deg);
-    }
-
-    .player-panel .portrait-wrapper > .pos-4-4,
-    #team-player-panel .portrait-wrapper > .pos-4-4 {
-        transform: rotate(210deg) translate(92px) rotate(-210deg);
-    }
-
-
-    .portrait > .adornment {
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
-        font-size: 1.25em;
-        margin-top: -17px;
-        margin-left: -17px;
-    }
-
-    .player-panel.mirrored .portrait > .adornment.indicator-type {
-        transform: rotate(160deg) translate(72px) rotate(-160deg);
-    }
-
-    .player-panel.mirrored .portrait > .adornment.indicator-level {
-        transform: rotate(110deg) translate(72px) rotate(-110deg);
-    }
-
-    .player-panel .portrait > .adornment.indicator-type {
-        transform: rotate(290deg) translate(72px) rotate(-290deg);
-    }
-
-    .player-panel .portrait > .adornment.indicator-level {
-        transform: rotate(340deg) translate(72px) rotate(-340deg);
-    }
-
-
-    .player-panel > .portrait-wrapper {
-        left: 56px;
-        bottom: 56px;
-    }
-
-    .player-panel.mirrored > .portrait-wrapper {
-        top: 56px;
-        right: 56px;
-    }
-
-
-    .player-panel > .nameplate {
-        left: 220px;
-        bottom: 92px;
-    }
-
-    .player-panel.mirrored > .nameplate {
-        top: 64px;
-        right: 220px;
-    }
-}
-
-
-
-
 #team-menu {
     position: relative;
     padding: 0.5em;
@@ -521,7 +386,7 @@ html, body {
 }
 
 #team-player-panel .portrait-wrapper {
-    margin-left: 3em;
+    margin-left: 2em;
 }
 
 #team-player-panel .info-panel {
@@ -529,6 +394,7 @@ html, body {
     top: 0;
     right: 0;
     min-width: 15em;
+    max-width: 22em;
     border: 1px solid;
     border-radius: 6px;
     background-color: ivory;
@@ -630,6 +496,16 @@ html, body {
 
 .progress-bar.small > .progress-label {
     color: whitesmoke;
+}
+
+
+.notification {
+    position: relative;
+    display: inline-block;
+    border-radius: 0.5em;
+    background-color: #333;
+    color: whitesmoke;
+    padding: 0 1em;
 }
 
 

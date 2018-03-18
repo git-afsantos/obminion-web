@@ -716,3 +716,27 @@ https://cssanimation.rocks/principles/
     50% { opacity: 1; }
     100% { opacity: 0; }
 }
+
+
+.animate-floating-text {
+    animation-name: floatingtext;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-name: floatingtext;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-fill-mode: forwards;
+    -webkit-animation-timing-function: ease-in-out;
+}
+
+@keyframes floatingtext {
+    0% { opacity: 0; top: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; top: -4em; }
+}
+
+@-webkit-keyframes floatingtext {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    100% { opacity: 0; top: -4em; }
+}
