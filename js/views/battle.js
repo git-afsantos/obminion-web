@@ -290,6 +290,10 @@
             ++this.currentAnimation.counter;
         },
 
+        getModel: function (index) {
+            return this.portraits[index].model;
+        },
+
         setTeam: function (team) {
             for (var i = 0, len = team.length; i < len; ++i) {
                 this.spawnUnit(team[i]);
@@ -586,7 +590,6 @@
         animateAttack: function () {
             this.teams[this.currentEvent.attacker].attack().animate();
             this.teams[this.currentEvent.defender].defend().animate();
-            this.notifications.showNotification("Team " + this.currentEvent.attacker + " attacks team " + this.currentEvent.defender + ".").animate();
         },
 
         onAbility: function (teamIndex, unitIndex, abilityName) {
@@ -601,8 +604,10 @@
         animateAbility: function () {
             var team = this.currentEvent.team,
                 unit = this.currentEvent.unit,
+                model = this.teams[team].getModel(unit),
                 ability = this.currentEvent.ability;
             this.teams[team].triggerAbility(unit, ability).animate();
+            this.notifications.notifyAbility(team, model, ability).animate();
         },
 
         onDeath: function (teamIndex, unitIndex) {
@@ -615,8 +620,10 @@
 
         animateDeath: function () {
             var team = this.currentEvent.team,
-                unit = this.currentEvent.unit;
+                unit = this.currentEvent.unit,
+                model = this.teams[team].getModel(unit);
             this.teams[team].killUnit(unit).animate();
+            this.notifications.notifyDeath(team, model).animate();
         },
 
         onRotateClockwise: function (teamIndex) {
@@ -628,6 +635,7 @@
 
         animateRotateClockwise: function () {
             this.teams[this.currentEvent.team].rotateClockwise().animate();
+            this.notifications.notifyRotation(this.currentEvent.team, true).animate();
         },
 
         onRotateCounterClockwise: function (teamIndex) {
@@ -639,6 +647,7 @@
 
         animateRotateCounterClockwise: function () {
             this.teams[this.currentEvent.team].rotateCounterClockwise().animate();
+            this.notifications.notifyRotation(this.currentEvent.team, false).animate();
         },
 
         onDamage: function (teamIndex, unitIndex, amount, type) {
@@ -654,9 +663,11 @@
         animateDamage: function () {
             var team = this.currentEvent.team,
                 unit = this.currentEvent.unit,
+                model = this.teams[team].getModel(unit),
                 amount = this.currentEvent.amount,
                 type = this.currentEvent.type;
             this.teams[team].damage(unit, amount, type).animate();
+            this.notifications.notifyDamage(team, model, amount, type).animate();
         },
 
         onHeal: function (teamIndex, unitIndex, amount, type) {
@@ -672,9 +683,11 @@
         animateHeal: function () {
             var team = this.currentEvent.team,
                 unit = this.currentEvent.unit,
+                model = this.teams[team].getModel(unit),
                 amount = this.currentEvent.amount,
                 type = this.currentEvent.type;
             this.teams[team].heal(unit, amount, type).animate();
+            this.notifications.notifyHeal(team, model, amount, type).animate();
         },
 
         onRequestAction: function () {
@@ -807,6 +820,37 @@
             this.msgs.push(msg);
             this.pushAnimation("show");
             return this;
+        },
+
+        notifyAbility: function (teamIndex, model, abilityName) {
+            return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
+                                         + model.get("name") + " activates "
+                                         + abilityName + ".");
+        },
+
+        notifyDeath: function (teamIndex, model) {
+            return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
+                                         + model.get("name") + " was defeated!");
+        },
+
+        notifyRotation: function (teamIndex, clockwise) {
+            return this.showNotification((teamIndex === 0 ? "Your team" : "The enemy team")
+                                         + " rotates "
+                                         + (clockwise ? "clockwise." : "counter-clockwise."));
+        },
+
+        notifyDamage: function (teamIndex, model, amount, type) {
+            return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
+                                         + model.get("name") + " takes "
+                                         + amount + " "
+                                         + (type == null || type === "?" ? "" : type + " ")
+                                         + "damage.");
+        },
+
+        notifyHeal: function (teamIndex, model, amount) {
+            return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
+                                         + model.get("name") + " recovers "
+                                         + amount + " health.");
         },
 
         animateShowNotification: function () {
