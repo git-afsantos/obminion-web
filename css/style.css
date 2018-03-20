@@ -193,7 +193,8 @@ html, body {
     overflow: hidden;
 }
 
-.portrait > img {
+.portrait > img,
+.icon-unit > img {
     width: 100%;
     height: 100%;
     display: none;
@@ -378,10 +379,6 @@ html, body {
     padding: 0 0.5em;
 }
 
-@media screen and (min-width:48em) {
-#team-menu {padding: 0 2em;}
-}
-
 #team-player-panel {
     position: relative;
     height: 50%;
@@ -419,19 +416,6 @@ html, body {
     border-style: solid;
     border-radius: 50%;
     background-color: ivory;
-}
-
-#team-collection-viewer .icon-unit > img {
-    width: 100%;
-    height: 100%;
-    display: none;
-}
-
-@media (min-width: 640px) and (min-height: 480px) {
-    #team-collection-viewer .icon-unit {
-        width: 4em;
-        height: 4em;
-    }
 }
 
 #team-collection-viewer .scroll-buttons {
