@@ -392,11 +392,6 @@ html, body {
 }
 
 #team-player-panel .info-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 22em;
-    margin-top: 2em;
     border: 1px solid;
     border-radius: 6px;
     background-color: ivory;

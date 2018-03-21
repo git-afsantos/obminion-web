@@ -1,0 +1,46 @@
+@media screen and (max-width: 30em) {
+    #team-player-panel {
+        height: 16em;
+    }
+
+    #team-player-panel .portrait-wrapper {
+        width: 6em;
+        height: 6em;
+        margin-top: 1.5em;
+        margin-left: 1.5em;
+    }
+
+    #team-player-panel .info-panel {
+        position: absolute;
+        top: auto;
+        bottom: 0.5em;
+        left: 0;
+        right: 0;
+        font-size: 0.75em;
+    }
+
+    #team-player-panel .info-panel span.detail {
+        font-size: 1em;
+    }
+
+    #team-player-panel .info-panel .progress-bar {
+        float: right;
+        width: 50%;
+    }
+
+    #team-player-panel .info-panel .progress-bar.small {
+        font-size: 1em;
+    }
+
+    #team-menu > .action-bar {
+        position: absolute;
+        bottom: 0.25em;
+        left: 0;
+        right: 0;
+        text-align: center;
+    }
+
+    #team-button-done {
+        font-size: 1em;
+    }
+}
