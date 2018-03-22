@@ -38,6 +38,12 @@
             this.listenTo(options.species, "sync", this.onSync);
             this.listenTo(options.abilities, "request", this.onRequest);
             this.listenTo(options.abilities, "sync", this.onSync);
+            this.listenTo(options.zones, "request", this.onRequest);
+            this.listenTo(options.zones, "sync", this.onSync);
+            this.listenTo(options.missions, "request", this.onRequest);
+            this.listenTo(options.missions, "sync", this.onSync);
+            this.listenTo(options.state, "request", this.onRequest);
+            this.listenTo(options.state, "sync", this.onSync);
         },
 
         onRequest: function () {

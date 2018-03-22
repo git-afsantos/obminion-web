@@ -5,13 +5,21 @@
     var models = window.Game.Models;
 
 
+    /*{
+        zone,
+        mission,
+        completedMissions
+    }*/
     models.GameState = Backbone.Model.extend({
         initialize: function () {
+            this.currentZone = null;
+            this.currentMission = null;
             this.species = new models.SpeciesCollection();
             this.instances = new models.UnitTeam();
             this.playerCollection = new models.UnitTeam();
             this.abilities = new models.AbilityCollection();
             this.zones = new models.ZoneCollection();
+            this.missions = new models.MissionCollection();
             this.playerTeam = new models.BattleTeam(null, {id: "player"});
             this.opponentTeam = new models.BattleTeam(null, {id: "opponent"});
         },
@@ -22,6 +30,25 @@
                 _instances: this.instances,
                 _abilities: this.abilities
             };
+        },
+
+        setZone: function (zoneId) {
+            this.currentZone = this.zones.get(zoneId);
+            this.set("zone", zoneId);
+            this.missions.zone = zoneId;
+            this.missions.fetch();
+            return this;
+        },
+
+        setMission: function (missionId) {
+            var mission = this.missions.get(missionId),
+                pre = mission.get("prerequisites"),
+                completed = _.intersection(this.get("completedMissions"), pre);
+            if (mission != null && completed.length === pre.length) {
+                this.currentMission = mission;
+                this.set("mission", missionId);
+            }
+            return this;
         },
 
         createCollection: function () {
@@ -62,6 +89,23 @@
             ]);
             this.opponentTeam = models.BattleTeam.fromUnitTeam(instances, this.abilities);
             this.opponentTeam.id = "opponent";
+        }
+    });
+
+
+    /*{
+        id,
+        name,
+        summary,
+        repeatable,
+        prerequisites: [],
+        opponent: [{UnitInstance}]
+    }*/
+    models.Mission = Backbone.Model.extend({});
+
+    models.MissionCollection = Backbone.Collection.extend({
+        url: function () {
+            return "data/missions/" + this.zone + ".json";
         }
     });
 

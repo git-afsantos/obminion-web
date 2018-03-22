@@ -90,7 +90,10 @@ to functions of the animation manager, by this script.
             el: $("#preloader"),
             model: Game.BattleEngine,
             species: Game.state.species,
-            abilities: Game.state.abilities
+            abilities: Game.state.abilities,
+            zones: Game.state.zones,
+            missions: Game.state.missions,
+            state: Game.state
         });
         Game.startView = new Game.Views.BaseView({
             el: $("#start-screen")
