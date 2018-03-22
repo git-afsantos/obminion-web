@@ -1,0 +1,5 @@
+[{
+    "id": "test-zone",
+    "name": "Test Zone",
+    "missions": [1, 2, 3]
+}]

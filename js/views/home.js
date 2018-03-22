@@ -22,7 +22,7 @@
         },
 
         gotoBattle: function () {
-            this.model.createBattle();
+            this.model.setMission(2).createMissionBattle();
             this.model.set("status", "battle");
             this.router.navigate("battle", this.navOptions);
         },

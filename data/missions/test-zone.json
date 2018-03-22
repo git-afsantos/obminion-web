@@ -1,0 +1,29 @@
+[{
+    "id": 1,
+    "name": "Mission 1",
+    "summary": "lorem ipsum",
+    "repeatable": false,
+    "prerequisites": [],
+    "opponent": [{ "template": 1 }]
+}, {
+    "id": 2,
+    "name": "Mission 2",
+    "summary": "lorem ipsum",
+    "repeatable": false,
+    "prerequisites": [],
+    "opponent": [
+        { "template": 1 },
+        { "template": 1, "health": 80 }
+    ]
+}, {
+    "id": 3,
+    "name": "Mission 3",
+    "summary": "lorem ipsum",
+    "repeatable": false,
+    "prerequisites": [1, 2],
+    "opponent": [
+        { "template": 2 },
+        { "template": 3 },
+        { "template": 4 }
+    ]
+}]

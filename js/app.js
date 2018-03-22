@@ -75,11 +75,13 @@ to functions of the animation manager, by this script.
         //BattleEngine.trigger("request", BattleEngine);
         Game.state.species.fetch();
         Game.state.abilities.fetch();
+        Game.state.zones.fetch();
         //BattleEngine.trigger("sync", BattleEngine);
 
         $("#start-button").on("click", function () {
             Game.state.createCollection();
             Game.state.set("status", "idle");
+            Game.state.setZone(Game.state.zones.first().id);
             Game.router.navigate("home", { trigger: true, replace: true });
         });
     });

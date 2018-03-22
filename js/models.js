@@ -44,10 +44,25 @@
             var mission = this.missions.get(missionId),
                 pre = mission.get("prerequisites"),
                 completed = _.intersection(this.get("completedMissions"), pre);
-            if (mission != null && completed.length === pre.length) {
+            if (completed.length === pre.length) {
                 this.currentMission = mission;
                 this.set("mission", missionId);
             }
+            return this;
+        },
+
+        createMissionBattle: function () {
+            this.playerTeam = models.BattleTeam.fromUnitTeam(this.instances, this.abilities);
+            this.playerTeam.id = "player";
+            var i, len, mi = this.currentMission.get("opponent"),
+                instances = new models.UnitTeam();
+            for (i = 0, len = mi.length; i < len; ++i) {
+                instances.add(new models.UnitInstance(mi[i], {
+                    UnitTemplate: this.species.get(mi[i].template)
+                }));
+            }
+            this.opponentTeam = models.BattleTeam.fromUnitTeam(instances, this.abilities);
+            this.opponentTeam.id = "opponent";
             return this;
         },
 
@@ -163,11 +178,11 @@
         initialize: function (attr, options) {
             this._template = options.UnitTemplate;
             this.set({
-                id:         "UI" + this.cid,
-                health:     this.health(),
-                power:      this.power(),
-                speed:      this.speed(),
-                ability:    "ability" in attr ? attr.ability : _.sample(this._template.get("abilities"))
+                id:         attr.id || "UI" + this.cid,
+                health:     attr.health || this.health(),
+                power:      attr.power || this.power(),
+                speed:      attr.speed || this.speed(),
+                ability:    attr.ability || _.sample(this._template.get("abilities"))
             }, {silent: true});
         },
 
