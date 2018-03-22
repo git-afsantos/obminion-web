@@ -41,15 +41,15 @@
             </p>
         </section>
         <section id="main-menu">
-            <p class="text-center">
-                <button id="home-button-team" class="pure-button text-large">Team</button>
-            </p>
+            <h2>Header</h2>
             <p class="text-center">
                 <button id="home-button-battle" class="pure-button text-large">Battle</button>
             </p>
-            <p class="text-center">
+            <div id="home-mission-panel"></div>
+            <div id="home-action-bar" class="action-bar">
+                <button id="home-button-team" class="pure-button text-large">Team</button>
                 <button id="home-button-research" class="pure-button text-large">Research</button>
-            </p>
+            </div>
         </section>
         <section id="battle-scene">
             <div id="opponent-battle-panel" class="player-panel mirrored">
@@ -150,6 +150,11 @@
             <h1><i class="fa fa-spinner fa-spin"></i></h1>
         </section>
     </div>
+    <script id="home-mission-launcher" type="text/template">
+        <div class="mission">
+            <button class="pure-button">Battle</button>
+        </div>
+    </script>
     <script id="battle-unit-portrait" type="text/template">
         <div class="portrait">
             <img src=""/>

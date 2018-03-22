@@ -142,6 +142,16 @@ html, body {
 }
 
 
+#home-action-bar {
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+
 
 #battle-scene {
     position: relative;

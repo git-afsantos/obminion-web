@@ -8,9 +8,17 @@
     /*{
         zone,
         mission,
-        completedMissions
+        completedMissions: {id: date}
     }*/
     models.GameState = Backbone.Model.extend({
+        defaults: function () {
+            return {
+                zone: "default",
+                mission: "default",
+                completedMissions: {}
+            }
+        },
+
         initialize: function () {
             this.currentZone = null;
             this.currentMission = null;
@@ -36,15 +44,17 @@
             this.currentZone = this.zones.get(zoneId);
             this.set("zone", zoneId);
             this.missions.zone = zoneId;
-            this.missions.fetch();
+            this.missions.fetch({ reset: true });
             return this;
         },
 
+        getAvailableMissions: function () {
+            return this.missions.getAvailable(this.get("completedMissions"));
+        },
+
         setMission: function (missionId) {
-            var mission = this.missions.get(missionId),
-                pre = mission.get("prerequisites"),
-                completed = _.intersection(this.get("completedMissions"), pre);
-            if (completed.length === pre.length) {
+            var mission = this.missions.get(missionId);
+            if (mission.isAvailable(this.get("completedMissions"))) {
                 this.currentMission = mission;
                 this.set("mission", missionId);
             }
@@ -116,11 +126,32 @@
         prerequisites: [],
         opponent: [{UnitInstance}]
     }*/
-    models.Mission = Backbone.Model.extend({});
+    models.Mission = Backbone.Model.extend({
+        isAvailable: function (completed) {
+            if (completed.hasOwnProperty(this.id)) {
+                return false;
+            }
+            var pre = this.get("prerequisites"), i = 0, len = pre.length;
+            for (; i < len; ++i) {
+                if (!completed.hasOwnProperty(pre[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    });
 
     models.MissionCollection = Backbone.Collection.extend({
+        model: models.Mission,
+
         url: function () {
             return "data/missions/" + this.zone + ".json";
+        },
+
+        getAvailable: function (completed) {
+            return this.filter(function (model) {
+                return model.isAvailable(completed);
+            });
         }
     });
 
