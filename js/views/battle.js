@@ -472,8 +472,8 @@
             this.listenTo(this.model, "battle:start", this.onBattleStart);
             this.listenTo(this.model, "battle:attack", this.onBattleAttack);
             this.listenTo(this.model, "battle:between_rounds", this.onBattleBetweenRounds);
-            this.listenTo(this.model, "battle:victory", this.onBattleEnd);
-            this.listenTo(this.model, "battle:defeat", this.onBattleEnd);
+            this.listenTo(this.model, "battle:victory", this.onBattleVictory);
+            this.listenTo(this.model, "battle:defeat", this.onBattleDefeat);
             this.listenTo(this.model, "request:action", this.onRequestAction);
             this.listenTo(this.model, "battle:end_phase", this.onBattleEndPhase);
             this.listenTo(this.model, "attack", this.onAttack);
@@ -563,7 +563,15 @@
 
         onBattleBetweenRounds: function () {},
 
-        onBattleEnd: function () {
+        onBattleVictory: function () {
+            this.state.setMissionCompleted(this.state.currentMission.id, true);
+            this.eventQueue.push({
+                animationFunction: this.deferLeave
+            });
+            this.animate();
+        },
+
+        onBattleDefeat: function () {
             this.eventQueue.push({
                 animationFunction: this.deferLeave
             });

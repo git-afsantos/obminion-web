@@ -7,7 +7,6 @@
     views.HomeView = views.BaseView.extend({
         events: {
             "click #home-button-team": "gotoTeam",
-            "click #home-button-battle": "gotoBattle",
             "click #home-button-research": "gotoResearch"
         },
 
@@ -16,12 +15,25 @@
         initialize: function (options) {
             this.router = options.router;
             this.missions = [];
+            this.$header = this.$("#home-header");
             this.$missionPanel = this.$("#home-mission-panel");
             this.missionTemplate = _.template($("#home-mission-launcher").html(), {variable: "data"});
-            this.listenTo(this.model.missions, "sync", this.onMissionSync);
+            this.listenTo(this.model.missions, "sync", this.renderMissions);
+            this.listenTo(this.model, "change:completedMissions", this.renderMissions);
         },
 
-        onMissionSync: function () {
+        build: function () {
+            this.$header.text("Player - " + this.model.getZoneName());
+            return this;
+        },
+
+        render: function () {
+            this.$header.text("Player - " + this.model.getZoneName());
+            this.renderMissions();
+            return this;
+        },
+
+        renderMissions: function () {
             var i, len, $m, v,
                 missions = this.model.getAvailableMissions();
             for (i = 0, len = this.missions.length; i < len; ++i) {
@@ -36,6 +48,7 @@
                 this.listenTo(v, "launch", this.gotoBattle);
                 this.missions.push(v);
             }
+            return this;
         },
 
         gotoTeam: function () {

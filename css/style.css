@@ -142,6 +142,25 @@ html, body {
 }
 
 
+#main-menu .mission {
+    text-align: center;
+}
+
+.mission-portrait {
+    width: 8em;
+    height: 8em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 0.5em;
+    border-color: #333;
+    background-position: center;
+    background-size: cover;
+    background-image: url(../assets/sprites/000.png);
+}
+
 #home-action-bar {
     position: absolute;
     top: auto;

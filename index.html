@@ -41,11 +41,8 @@
             </p>
         </section>
         <section id="main-menu">
-            <h2>Header</h2>
-            <p class="text-center">
-                <button id="home-button-battle" class="pure-button text-large">Battle</button>
-            </p>
-            <div id="home-mission-panel"></div>
+            <h2 id="home-header">Header</h2>
+            <div id="home-mission-panel" class="pure-g"></div>
             <div id="home-action-bar" class="action-bar">
                 <button id="home-button-team" class="pure-button text-large">Team</button>
                 <button id="home-button-research" class="pure-button text-large">Research</button>
@@ -151,7 +148,8 @@
         </section>
     </div>
     <script id="home-mission-launcher" type="text/template">
-        <div class="mission">
+        <div class="mission pure-u-1-2 pure-u-xs-1-3">
+            <div class="mission-portrait"></div>
             <button class="pure-button">Battle</button>
         </div>
     </script>

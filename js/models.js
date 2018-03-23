@@ -48,6 +48,10 @@
             return this;
         },
 
+        getZoneName: function () {
+            return this.currentZone.get("name");
+        },
+
         getAvailableMissions: function () {
             return this.missions.getAvailable(this.get("completedMissions"));
         },
@@ -58,6 +62,18 @@
                 this.currentMission = mission;
                 this.set("mission", missionId);
             }
+            return this;
+        },
+
+        setMissionCompleted: function (missionId, completed) {
+            var cm = this.get("completedMissions");
+            if (completed) {
+                cm[missionId] = Date.now();
+            } else {
+                delete cm[missionId];
+            }
+            this.trigger("change", this, {missionId: missionId, completed: completed});
+            this.trigger("change:completedMissions", this, cm, {missionId: missionId, completed: completed});
             return this;
         },
 
