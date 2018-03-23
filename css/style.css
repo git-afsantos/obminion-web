@@ -3,6 +3,13 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    background:
+        radial-gradient(circle, transparent 20%, slategray 20%, slategray 80%, transparent 80%, transparent),
+        radial-gradient(circle, transparent 20%, slategray 20%, slategray 80%, transparent 80%, transparent) 50px 50px,
+        linear-gradient(#A8B1BB 8px, transparent 8px) 0 -4px,
+        linear-gradient(90deg, #A8B1BB 8px, transparent 8px) -4px 0;
+    background-color: slategray;
+    background-size:100px 100px, 100px 100px, 50px 50px, 50px 50px;
 }
 
 
@@ -126,6 +133,9 @@ html, body {
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
+    background: #abbaab;
+    background: -webkit-linear-gradient(to right, #abbaab, #ffffff);
+    background: linear-gradient(to right, #abbaab, #ffffff);
 }
 
 
@@ -474,6 +484,38 @@ html, body {
 }
 
 
+
+.modal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 75%;
+    min-height: 4em;
+    padding: 1em;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    border: 1px solid #333;
+    border-radius: 0.5em;
+    border-color: ivory;
+    color: ivory;
+    background: #232526;
+    background: -webkit-linear-gradient(to right, #232526, #414345);
+    background: linear-gradient(to right, #232526, #414345);
+}
+
+.dialog .action-bar {
+    text-align: center;
+    margin-top: 2em;
+}
 
 
 .progress-bar {

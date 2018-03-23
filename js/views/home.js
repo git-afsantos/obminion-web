@@ -18,12 +18,15 @@
             this.$header = this.$("#home-header");
             this.$missionPanel = this.$("#home-mission-panel");
             this.missionTemplate = _.template($("#home-mission-launcher").html(), {variable: "data"});
+            this.missionDialog = new MissionModal({ el: this.$("#home-mission-modal") });
             this.listenTo(this.model.missions, "sync", this.renderMissions);
             this.listenTo(this.model, "change:completedMissions", this.renderMissions);
+            this.listenTo(this.missionDialog, "launch", this.gotoBattle);
         },
 
         build: function () {
             this.$header.text("Player - " + this.model.getZoneName());
+            this.missionDialog.hide();
             return this;
         },
 
@@ -45,10 +48,15 @@
                 $m = $(this.missionTemplate(missions[i].attributes));
                 this.$missionPanel.append($m);
                 v = new MissionView({ el: $m, model: missions[i] });
-                this.listenTo(v, "launch", this.gotoBattle);
+                this.listenTo(v, "open", this.openMission);
                 this.missions.push(v);
             }
             return this;
+        },
+
+        openMission: function (mission) {
+            this.missionDialog.model = mission;
+            this.missionDialog.show().render();
         },
 
         gotoTeam: function () {
@@ -69,10 +77,32 @@
 
     var MissionView = Backbone.View.extend({
         events: {
-            "click button": "launch"
+            "click button": "open"
         },
 
-        launch: function () {
+        open: function () {
+            this.trigger("open", this.model);
+        }
+    });
+
+
+    var MissionModal = views.Modal.extend({
+        events: {
+            "click .button-close":  "hide",
+            "click .button-confirm": "launchMission"
+        },
+
+        initialize: function () {
+            this.$content = this.$(".dialog-content");
+            this.template = _.template($("#home-mission-dialog-content").html(), {variable: "data"});
+        },
+
+        render: function () {
+            this.$content.html(this.template(this.model.attributes));
+            return this;
+        },
+
+        launchMission: function () {
             this.trigger("launch", this.model.id);
         }
     });

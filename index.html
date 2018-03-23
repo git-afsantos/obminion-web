@@ -48,6 +48,15 @@
                 <button id="home-button-team" class="pure-button text-large">Team</button>
                 <button id="home-button-research" class="pure-button text-large">Research</button>
             </div>
+            <div id="home-mission-modal" class="modal">
+                <div class="dialog">
+                    <div class="dialog-content">Placeholder text.</div>
+                    <div class="action-bar">
+                        <button class="pure-button button-close">Close</button>
+                        <button class="pure-button button-confirm">Start</button>
+                    </div>
+                </div>
+            </div>
         </section>
         <section id="battle-scene">
             <div id="opponent-battle-panel" class="player-panel mirrored">
@@ -156,6 +165,12 @@
             <div class="mission-portrait"></div>
             <button class="pure-button">Battle</button>
         </div>
+    </script>
+    <script id="home-mission-dialog-content" type="text/template">
+        <h3><%= data.name %></h3>
+        <p><%= data.summary %></p>
+        <h4>Rewards</h4>
+        <p>[Placeholder]</p>
     </script>
     <script id="battle-unit-portrait" type="text/template">
         <div class="portrait">
