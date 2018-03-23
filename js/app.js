@@ -116,8 +116,10 @@ to functions of the animation manager, by this script.
             model: Game.state,
             router: Game.router
         });
-        Game.researchView = new Game.Views.BaseView({
-            el: $("#research-menu")
+        Game.researchView = new Game.Views.ResearchView({
+            el: $("#research-menu"),
+            model: Game.state,
+            router: Game.router
         });
         Game.mainView.hide();
         Game.battleView.hide();
