@@ -140,7 +140,9 @@
         summary,
         repeatable,
         prerequisites: [],
-        opponent: [{UnitInstance}]
+        rewards: {type: amount},    // earned in case of victory
+        risks: {type: amount},      // lost in case of defeat
+        opponent: [{UnitInstance}]  // empty for non-battle events
     }*/
     models.Mission = Backbone.Model.extend({
         isAvailable: function (completed) {
@@ -175,7 +177,8 @@
     /*{
         id,
         name,
-        missions
+        missions,
+        events
     }*/
     models.Zone = Backbone.Model.extend({});
 

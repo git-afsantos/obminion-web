@@ -21,7 +21,7 @@
             this.missionDialog = new MissionModal({ el: this.$("#home-mission-modal") });
             this.listenTo(this.model.missions, "sync", this.renderMissions);
             this.listenTo(this.model, "change:completedMissions", this.renderMissions);
-            this.listenTo(this.missionDialog, "launch", this.gotoBattle);
+            this.listenTo(this.missionDialog, "launch", this.gotoMission);
         },
 
         build: function () {
@@ -63,7 +63,7 @@
             this.router.navigate("team", this.navOptions);
         },
 
-        gotoBattle: function (missionId) {
+        gotoMission: function (missionId) {
             this.model.setMission(missionId).createMissionBattle();
             this.model.set("status", "battle");
             this.router.navigate("battle", this.navOptions);
