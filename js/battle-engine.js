@@ -14,6 +14,7 @@
         this._round = 0;
         this._abilities = [];
         this._effects = {};
+        this._attack_enabled = true;
     };
 
     BattleMechanics.prototype = Object.create(null);
@@ -21,6 +22,9 @@
 
     BattleMechanics.prototype.team = function (i, team) {
         if (arguments.length < 2) { return this._teams[i]; }
+        if (this._teams[i] != null) {
+            this.stopListening(this._teams[i]);
+        }
         this._teams[i] = team;
         team._teamId = i;
         this.listenTo(team, "remove", this.onUnitRemove);
@@ -105,13 +109,52 @@
         u.trigger("battle:attack", atkArgs);
         t.trigger("battle:defend", defArgs);
         this.trigger("attack", u, t);
-        damage = t.damage(damage, type);
-        this.trigger("damage", t, damage, type);
+        damage = this.damage(t, damage, type);
         atkArgs.damage = damage;
         defArgs.damage = damage;
         u.trigger("battle:post_attack", atkArgs);
         t.trigger("battle:post_defend", defArgs);
         return this;
+    };
+
+    BattleMechanics.prototype.damage = function (unit, amount, type) {
+        var m1 = unit._maxHealth.actual(),
+            rh1 = unit.get("health") / m1,
+            damage = unit.damage(amount, type), // <-- things happen here
+            m2 = unit._maxHealth.actual(),
+            rh2 = unit.get("health") / m2;
+        if (rh1 > 0.5) {
+            if (rh2 <= 0.5) {
+                unit.trigger("battle:health_low", {emitter: unit});
+            }
+        }
+        else {
+            if (rh2 > 0.5) {
+                unit.trigger("battle:health_high", {emitter: unit});
+            }
+        }
+        this.trigger("damage", unit, damage, type);
+        return damage;
+    };
+
+    BattleMechanics.prototype.heal = function (unit, amount, type) {
+        var m1 = unit._maxHealth.actual(),
+            rh1 = unit.get("health") / m1,
+            damage = unit.heal(amount, type), // <-- things happen here
+            m2 = unit._maxHealth.actual(),
+            rh2 = unit.get("health") / m2;
+        if (rh1 > 0.5) {
+            if (rh2 <= 0.5) {
+                unit.trigger("battle:health_low", {emitter: unit});
+            }
+        }
+        else {
+            if (rh2 > 0.5) {
+                unit.trigger("battle:health_high", {emitter: unit});
+            }
+        }
+        this.trigger("heal", unit, damage, type);
+        return damage;
     };
 
     BattleMechanics.prototype.cleanup = function () {
@@ -378,8 +421,7 @@
             if (p.amount != null) amount = p.amount;
             else amount = (p.relative * args[p.reference]) | 0;
             while (i--) {
-                damage = targets[i].damage(amount, type);
-                this.mechanics.trigger("damage", targets[i], damage, type);
+                this.mechanics.damage(targets[i], amount, type);
             }
         },
         heal: function (args) {
@@ -390,9 +432,56 @@
             if (p.amount != null) amount = p.amount;
             else amount = (p.relative * args[p.reference]) | 0;
             while (i--) {
-                damage = targets[i].heal(amount, type);
-                this.mechanics.trigger("heal", targets[i], damage, type);
+                this.mechanics.heal(targets[i], amount, type);
             }
+        },
+        buff_health: function (args) {
+            var amount, p = this.parameters,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) { targets[i].plusHealth(amount); }
+        },
+        debuff_health: function (args) {
+            var amount, p = this.parameters,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) { targets[i].minusHealth(amount); }
+        },
+        buff_power: function (args) {
+            var amount, p = this.parameters,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) { targets[i].plusPower(amount); }
+        },
+        debuff_power: function (args) {
+            var amount, p = this.parameters,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) { targets[i].minusPower(amount); }
+        },
+        buff_speed: function (args) {
+            var amount, p = this.parameters,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) { targets[i].plusSpeed(amount); }
+        },
+        debuff_speed: function (args) {
+            var amount, p = this.parameters,
+                targets = this.target(),
+                i = targets.length;
+            if (p.amount != null) amount = p.amount;
+            else amount = (p.relative * args[p.reference]) | 0;
+            while (i--) { targets[i].minusSpeed(amount); }
         }
     };
 

@@ -383,6 +383,13 @@
         damage: function (amount, type) {
             type = type || "?";
             amount = ((models.UnitType[this.get("type")])(type))(amount);
+            var args = {
+                emitter: this,
+                damage: amount,
+                type: type
+            };
+            this.trigger("battle:pre_damage", args);
+            amount = args.damage;
             this.set("health", Math.max(0, this.get("health") - amount));
             this.trigger("battle:damage", {
                 emitter: this,
@@ -393,6 +400,12 @@
         },
 
         heal: function (amount) {
+            var args = {
+                emitter: this,
+                damage: amount
+            };
+            this.trigger("battle:pre_heal", args);
+            amount = args.damage;
             this.set("health", Math.min(this._maxHealth.actual(), this.get("health") + amount));
             this.trigger("battle:heal", {
                 emitter: this,

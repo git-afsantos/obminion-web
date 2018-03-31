@@ -47,4 +47,35 @@
             "reference": "damage"
         }
     }]
+}, {
+    "id": 10,
+    "name": "Blaze",
+    "description": "Increases power when at low health.",
+    "effects": [{
+        "mechanic": "buff_power",
+        "target": "self",
+        "events": ["self health_low"],
+        "parameters": {
+            "amount": 4
+        }
+    }]
+}, {
+    "id": 11,
+    "name": "Discharge",
+    "description": "Attacks also damage adjacent targets and allies.",
+    "effects": [{
+        "mechanic": "damage",
+        "target": "opponent_adjacent",
+        "events": ["self post_attack"],
+        "parameters": {
+            "amount": 2
+        }
+    }, {
+        "mechanic": "damage",
+        "target": "self_adjacent",
+        "events": ["self post_attack"],
+        "parameters": {
+            "amount": 2
+        }
+    }]
 }]
