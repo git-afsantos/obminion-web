@@ -544,6 +544,9 @@
             a.push(m);
             this.trigger("battle:rotate", args);
             this.trigger("battle:rotate_left", args);
+            this.at(0).trigger("battle:active", {
+                emitter: this.at(0), previous: m
+            });
             return this;
         },
 
@@ -552,12 +555,15 @@
                 m = a.pop(),
                 args = {
                     emitter: this,
-                    previous: this.at(1),
+                    previous: this.at(0),
                     active: m
                 };
             a.unshift(m);
             this.trigger("battle:rotate", args);
             this.trigger("battle:rotate_right", args);
+            m.trigger("battle:active", {
+                emitter: m, previous: this.at(1)
+            });
             return this;
         },
 

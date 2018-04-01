@@ -78,4 +78,54 @@
             "amount": 2
         }
     }]
+}, {
+    "id": 12,
+    "name": "Rampage",
+    "description": "Increases power over time at the cost of health.",
+    "effects": [{
+        "mechanic": "buff_power",
+        "target": "self",
+        "events": ["self attack"],
+        "parameters": {
+            "amount": 2
+        }
+    }, {
+        "mechanic": "debuff_health",
+        "target": "self",
+        "events": ["self attack"],
+        "parameters": {
+            "amount": 2
+        }
+    }]
+}, {
+    "id": 13,
+    "name": "Retaliate",
+    "description": "Increases power when an ally dies.",
+    "effects": [{
+        "mechanic": "buff_power",
+        "target": "self",
+        "events": ["friend_others death"],
+        "parameters": {
+            "amount": 4
+        }
+    }]
+}, {
+    "id": 14,
+    "name": "Growth",
+    "description": "Increases health and power when becoming active.",
+    "effects": [{
+        "mechanic": "buff_power",
+        "target": "self",
+        "events": ["self active"],
+        "parameters": {
+            "amount": 1
+        }
+    }, {
+        "mechanic": "buff_health",
+        "target": "self",
+        "events": ["self active"],
+        "parameters": {
+            "amount": 2
+        }
+    }]
 }]

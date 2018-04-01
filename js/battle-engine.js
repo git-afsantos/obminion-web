@@ -164,27 +164,27 @@
     };
 
     BattleMechanics.prototype.tick = function () {
-        /*var i = this._teams.length;
-        this.trigger("tick:pre", this._round);
+        var i = this._teams.length;
+        //this.trigger("tick:pre", this._round);
         while (i--) {
             this._teams[i].forEach(this._tickUnit, this);
         }
-        this.trigger("tick:post", this._round);*/
+        //this.trigger("tick:post", this._round);
         return this;
     };
 
-    BattleMechanics.prototype._tickUnit = function (bp, i) {
-        /*var effects, group, e;
-        effects = bp.get("effects");
+    BattleMechanics.prototype._tickUnit = function (unit, i) {
+        var effects, group, e;
+        effects = unit.get("effects");
         for (group in effects) if (effects.hasOwnProperty(group)) {
             e = effects[group];
             // Effect.tick() calls Effect._tick().
             if (!e.tick()) {
-                bp.removeEffect(e);
+                unit.removeEffect(e);
                 e._off();
-                this.trigger("battleunit:effect:remove", bp, e);
+                //this.trigger("battleunit:effect:remove", unit, e);
             }
-        }*/
+        }
     };
 
     BattleMechanics.prototype.onUnitRemove = function (unit, team, options) {
