@@ -355,7 +355,8 @@
         if (!unit._ability) return;
         var e, i, len, aes = unit._ability.get("effects");
         for (i = 0, len = aes.length; i < len; ++i) {
-            e = new EffectHandler(this, unit, aes[i].events, aes[i].target, aes[i].parameters, i);
+            e = new EffectHandler(this, unit, aes[i].events, aes[i].target,
+                                  aes[i].parameters, i, "ability");
             e.mechanic = e._effectHandlers[aes[i].mechanic];
             e.rebindToEvents();
             unit._handlers.push(e);
@@ -367,13 +368,14 @@
 
     ////////////////////////////////////////////////////////////////////////////
 
-    EffectHandler = function (mechanics, unit, events, target, parameters, index) {
+    EffectHandler = function (mechanics, unit, events, target, parameters, index, channel) {
         this.mechanics = mechanics;
         this.unit = unit;
         this.events = [];
         this.target = mechanics.target(unit, target);
         this.parameters = parameters;
         this.index = index;
+        this.channel = channel;
         for (var i = 0; i < events.length; ++i) {
             this.events.push(events[i].split(" "));
         }
@@ -395,12 +397,12 @@
     };
 
     EffectHandler.prototype.triggerEffect = function (args) {
-        this.unit.trigger("battle:ability", {
+        this.unit.trigger("battle:" + this.channel, {
             emitter: this.unit,
             ability: this.unit._ability,
             effect: this.index
         });
-        this.mechanics.trigger("ability", this.unit, this.unit._ability);
+        this.mechanics.trigger(this.channel, this.unit, this.unit._ability);
         this.mechanic(args);
     };
 

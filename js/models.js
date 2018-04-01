@@ -419,21 +419,22 @@
             this.trigger("battle:death", {emitter: this});
         },
 
-
-        /*addEffect = function (effect) {
-            var prev = this._effects[effect.group];
-            if (prev) {
+        addEffect = function (effect) {
+            var effects = this.get("effects"),
+                prev = effects[effect.group];
+            if (prev != null) {
                 return false;
             }
-            this._effects[effect.group] = effect;
+            effects[effect.group] = effect;
             return true;
         },
 
         removeEffect = function (effect) {
-            var prev = this._effects[effect.group];
-            delete this._effects[effect.group];
-            return !!prev;
-        },*/
+            var effects = this.get("effects"),
+                prev = effects[effect.group];
+            delete effects[effect.group];
+            return prev != null;
+        },
 
         isAlive: function () {
             return this.get("health") > 0;
