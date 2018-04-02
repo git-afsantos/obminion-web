@@ -3,17 +3,20 @@
     /* globals window:false, _:false, Backbone:false */
 
     var BattleEngine, BattleMechanics, EffectHandler,
-        data = window.Game.data,
         models = window.Game.Models;
 
 
     BattleMechanics = function () {
+        this.data = {
+            species: null,
+            instances: null,
+            abilities: null,
+            effects: null
+        };
         this._teams = [];
         this._turn  = 0;
         this._opposite = 1;
         this._round = 0;
-        this._abilities = [];
-        this._effects = {};
         this._attack_enabled = true;
     };
 
@@ -53,6 +56,16 @@
         return this._teams[this._opposite].getActive();
     };
 
+    BattleMechanics.prototype.reset = function () {
+        this._teams = [];
+        this._turn  = 0;
+        this._opposite = 1;
+        this._round = 0;
+        this._attack_enabled = true;
+        this.trigger("reset", this);
+        return this;
+    };
+
     BattleMechanics.prototype.flipTurn = function () {
         var prev = this._turn;
         this._turn = this._opposite;
@@ -62,9 +75,9 @@
     };
 
     BattleMechanics.prototype.nextRound = function () {
-        // this.trigger("round:end", this._round);
+        this.trigger("round_end", this._round);
         ++this._round;
-        // this.trigger("round:begin", this._round);
+        this.trigger("round_start", this._round);
         return this;
     };
 
@@ -163,38 +176,10 @@
         return this;
     };
 
-    BattleMechanics.prototype.tick = function () {
-        var i = this._teams.length;
-        //this.trigger("tick:pre", this._round);
-        while (i--) {
-            this._teams[i].forEach(this._tickUnit, this);
-        }
-        //this.trigger("tick:post", this._round);
-        return this;
-    };
-
-    BattleMechanics.prototype._tickUnit = function (unit, i) {
-        var effects, group, e;
-        effects = unit.get("effects");
-        for (group in effects) if (effects.hasOwnProperty(group)) {
-            e = effects[group];
-            // Effect.tick() calls Effect._tick().
-            if (!e.tick()) {
-                unit.removeEffect(e);
-                e._off();
-                //this.trigger("battleunit:effect:remove", unit, e);
-            }
-        }
-    };
-
     BattleMechanics.prototype.onUnitRemove = function (unit, team, options) {
-        var hs = unit._handlers, i = hs.length, j;
+        var hs = unit._handlers, i = hs.length;
         while (i--) {
             hs[i].stopListening();
-            j = this._abilities.indexOf(hs[i]);
-            if (j > -1) {
-                this._abilities.splice(j, 1);
-            }
         }
         this.trigger("death", unit, team, options.index);
     };
@@ -355,12 +340,9 @@
         if (!unit._ability) return;
         var e, i, len, aes = unit._ability.get("effects");
         for (i = 0, len = aes.length; i < len; ++i) {
-            e = new EffectHandler(this, unit, aes[i].events, aes[i].target,
-                                  aes[i].parameters, i, "ability");
-            e.mechanic = e._effectHandlers[aes[i].mechanic];
+            e = new EffectHandler(this, unit, unit._ability, "ability", aes[i]);
             e.rebindToEvents();
             unit._handlers.push(e);
-            this._abilities.push(e);
         }
     };
 
@@ -368,17 +350,20 @@
 
     ////////////////////////////////////////////////////////////////////////////
 
-    EffectHandler = function (mechanics, unit, events, target, parameters, index, channel) {
+    EffectHandler = function (mechanics, unit, ability, channel, effect) {
         this.mechanics = mechanics;
         this.unit = unit;
-        this.events = [];
-        this.target = mechanics.target(unit, target);
-        this.parameters = parameters;
-        this.index = index;
+        this.ability = ability;
         this.channel = channel;
-        for (var i = 0; i < events.length; ++i) {
-            this.events.push(events[i].split(" "));
+        this.target = mechanics.target(unit, effect.target);
+        this.parameters = effect.parameters;
+        this.group = effect.group || null;
+        this.duration = effect.duration != null ? effect.duration : null;
+        this.events = [];
+        for (var i = 0; i < effect.events.length; ++i) {
+            this.events.push(effect.events[i].split(" "));
         }
+        this.mechanic = this._effectHandlers[effect.mechanic];
     };
 
 
@@ -390,20 +375,70 @@
         this.stopListening();
         while (i--) {
             e = this.events[i];
-            t = this.mechanics.target(this.unit, e[0])();
-            for (j = t.length; j--;)
-                this.listenTo(t[j], "battle:" + e[1], this.triggerEffect);
+            switch (e[0]) {
+                case "on":
+                    this.listenTo(this.unit, "battle:" + this.channel + "_apply",
+                                  this.triggerEffectForThisAbility);
+                    break;
+                case "off":
+                    this.listenTo(this.unit, "battle:" + this.channel + "_remove",
+                                  this.triggerEffectForThisAbility);
+                    break;
+                case "mechanics":
+                    this.listenTo(this.mechanics, e[1], this.triggerEffect);
+                    break;
+                default:
+                    t = this.mechanics.target(this.unit, e[0])();
+                    for (j = t.length; j--;) {
+                        this.listenTo(t[j], "battle:" + e[1], this.triggerEffect);
+                    }
+                    break;
+            }
         }
+        this.listenTo(this.unit, "battle:" + this.channel + "_remove", this.onRemoveThisAbility);
+        this.listenTo(this.mechanics, "round_end", this.tick);
+        this.listenTo(this.mechanics, "reset", this.onReset);
     };
 
     EffectHandler.prototype.triggerEffect = function (args) {
         this.unit.trigger("battle:" + this.channel, {
             emitter: this.unit,
-            ability: this.unit._ability,
-            effect: this.index
+            ability: this.ability,
+            effect: this
         });
-        this.mechanics.trigger(this.channel, this.unit, this.unit._ability);
+        this.mechanics.trigger(this.channel, this.unit, this.ability);
         this.mechanic(args);
+    };
+
+    EffectHandler.prototype.triggerEffectForThisAbility = function (args) {
+        if (args.ability === this.ability) {
+            this.triggerEffect(args);
+        }
+    };
+
+    EffectHandler.prototype.onRemoveThisAbility = function (args) {
+        if (args.ability === this.ability) {
+            this.onReset();
+        }
+    };
+
+    EffectHandler.prototype.onReset = function () {
+        this.stopListening();
+        var i = this.unit._handlers.indexOf(this);
+        this.unit._handlers.splice(i, 1);
+    };
+
+    EffectHandler.prototype.tick = function () {
+        if (this.duration != null) {
+            --this.duration;
+            if (this.duration <= 0) {
+                var effect = this.unit.get("effects")[this.group];
+                --effect.counter;
+                if (effect.counter <= 0) {
+                    this.unit.removeEffect(this.group);
+                }
+            }
+        }
     };
 
     EffectHandler.prototype.mechanic = function () {};
@@ -416,74 +451,94 @@
             console.log("<ABILITY> The ability has been triggered!");
         },
         damage: function (args) {
-            var amount, damage, p = this.parameters,
+            var amount, p = this.parameters,
                 type = p.type,
                 targets = this.target(),
                 i = targets.length;
             if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
+            else if (p.from == null) amount = (p.relative * args[p.reference]) | 0;
+            else {
+                var u = this.mechanics.target(this.unit, p.from)()[0];
+                amount = (p.relative * u.get(p.reference)) | 0;
+            }
             while (i--) {
                 this.mechanics.damage(targets[i], amount, type);
             }
         },
         heal: function (args) {
-            var amount, damage, p = this.parameters,
+            var amount, p = this.parameters,
                 type = p.type,
                 targets = this.target(),
                 i = targets.length;
             if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
+            else if (p.from == null) amount = (p.relative * args[p.reference]) | 0;
+            else {
+                var u = this.mechanics.target(this.unit, p.from)()[0];
+                amount = (p.relative * u.get(p.reference)) | 0;
+            }
             while (i--) {
                 this.mechanics.heal(targets[i], amount, type);
             }
         },
-        buff_health: function (args) {
-            var amount, p = this.parameters,
+        apply: function () {
+            var j, h, t, c,
+                p = this.parameters,
                 targets = this.target(),
-                i = targets.length;
-            if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
-            while (i--) { targets[i].plusHealth(amount); }
+                i = targets.length,
+                e = this.mechanics.data.effects.get(p.effect),
+                aes = e.get("effects"),
+                len = aes.length;
+            while (i--) {
+                t = targets[i];
+                c = _.clone(e.attributes);
+                c.counter = len;
+                if (t.get("effects")[c.group] == null) {
+                    for (j = 0; j < len; ++j) {
+                        h = new EffectHandler(this.mechanics, t, e, "effect", _.clone(aes[j]));
+                        h.rebindToEvents();
+                        t._handlers.push(h);
+                    }
+                }
+                t.addEffect(c);
+            }
         },
-        debuff_health: function (args) {
-            var amount, p = this.parameters,
+        stat_bonus: function (args) {
+            var u, health, power, speed,
+                p = this.parameters,
+                ph = p.health,
+                pp = p.power,
+                ps = p.speed,
                 targets = this.target(),
                 i = targets.length;
-            if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
-            while (i--) { targets[i].minusHealth(amount); }
-        },
-        buff_power: function (args) {
-            var amount, p = this.parameters,
-                targets = this.target(),
-                i = targets.length;
-            if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
-            while (i--) { targets[i].plusPower(amount); }
-        },
-        debuff_power: function (args) {
-            var amount, p = this.parameters,
-                targets = this.target(),
-                i = targets.length;
-            if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
-            while (i--) { targets[i].minusPower(amount); }
-        },
-        buff_speed: function (args) {
-            var amount, p = this.parameters,
-                targets = this.target(),
-                i = targets.length;
-            if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
-            while (i--) { targets[i].plusSpeed(amount); }
-        },
-        debuff_speed: function (args) {
-            var amount, p = this.parameters,
-                targets = this.target(),
-                i = targets.length;
-            if (p.amount != null) amount = p.amount;
-            else amount = (p.relative * args[p.reference]) | 0;
-            while (i--) { targets[i].minusSpeed(amount); }
+            if (ph == null) health = 0;
+            else if (ph.amount != null) health = ph.amount;
+            else if (ph.from == null) health = (ph.relative * args[ph.reference]) | 0;
+            else {
+                u = this.mechanics.target(this.unit, ph.from)()[0];
+                health = (ph.relative * u.get(ph.reference)) | 0;
+            }
+            if (pp == null) power = 0;
+            else if (pp.amount != null) power = pp.amount;
+            else if (pp.from == null) power = (pp.relative * args[pp.reference]) | 0;
+            else {
+                u = this.mechanics.target(this.unit, pp.from)()[0];
+                power = (pp.relative * u.get(pp.reference)) | 0;
+            }
+            if (ps == null) speed = 0;
+            else if (ps.amount != null) speed = ps.amount;
+            else if (ps.from == null) speed = (ps.relative * args[ps.reference]) | 0;
+            else {
+                u = this.mechanics.target(this.unit, ps.from)()[0];
+                speed = (ps.relative * u.get(ps.reference)) | 0;
+            }
+            while (i--) {
+                if (health > 0) targets[i].plusHealth(health);
+                else if (health < 0) targets[i].minusHealth(health);
+                if (power > 0) targets[i].plusPower(power);
+                else if (power < 0) targets[i].minusPower(power);
+                if (speed > 0) targets[i].plusSpeed(speed);
+                else if (speed < 0) targets[i].minusSpeed(speed);
+            }
         }
     };
 
@@ -504,6 +559,7 @@
             this._stateMachine.state("battle:defeat", this._state_defeat);
             this.listenTo(this._mechanics, "attack", this._onAttack);
             this.listenTo(this._mechanics, "ability", this._onAbility);
+            this.listenTo(this._mechanics, "effect", this._onEffect);
             this.listenTo(this._mechanics, "death", this._onDeath);
             this.listenTo(this._mechanics, "damage", this._onDamage);
             this.listenTo(this._mechanics, "heal", this._onHeal);
@@ -514,8 +570,17 @@
             return s != "battle:victory" && s != "battle:defeat";
         },
 
+        setData: function (species, instances, abilities, effects) {
+            this._mechanics.data.species = species;
+            this._mechanics.data.instances = instances;
+            this._mechanics.data.abilities = abilities;
+            this._mechanics.data.effects = effects;
+            return this;
+        },
+
         createBattle: function (player, opponent) {
             var sm = this._stateMachine;
+            this._mechanics.reset();
             this._mechanics.team(0, player);
             this._mechanics.team(1, opponent);
             this.set("teams", [player, opponent]);
@@ -632,7 +697,7 @@
 //            console.log("Between rounds.");
             this.trigger("battle:between_rounds", this);
             this.set("state", "battle:between_rounds");
-            this._mechanics.tick();
+            this._mechanics.nextRound();
 //            console.log("Player", "" + this._mechanics.activeUnit(0).get("health") +
 //                        "/" + this._mechanics.activeUnit(0).get("maxHealth"), "HP");
 //            console.log("Opponent", "" + this._mechanics.activeUnit(1).get("health") +
@@ -646,7 +711,6 @@
                 this.trigger("battle:end_phase", this);
                 return "battle:victory";
             }
-            this._mechanics.nextRound();
             this.trigger("battle:end_phase", this);
             return "battle:select_action";
         },
@@ -672,6 +736,11 @@
         _onAbility: function (unit, ability) {
             this.trigger("ability", unit.collection._teamId, unit.collection.indexOf(unit),
                          ability.get("name"));
+        },
+
+        _onEffect: function (unit, effect) {
+            this.trigger("effect", unit.collection._teamId, unit.collection.indexOf(unit),
+                         effect.get("name"));
         },
 
         _onDeath: function (unit, team, index) {

@@ -1,0 +1,38 @@
+[{
+    "id": 1,
+    "group": "poison",
+    "name": "Poison",
+    "description": "Poison deals damage over time.",
+    "effects": [{
+        "mechanic": "damage",
+        "target": "self",
+        "events": ["mechanics round_end"],
+        "parameters": {
+            "relative": 0.125,
+            "reference": "maxHealth",
+            "from": "self"
+        }
+    }]
+}, {
+    "id": 2,
+    "group": "retaliate",
+    "name": "Retaliation",
+    "description": "Temporary Power boost.",
+    "effects": [{
+        "mechanic": "stat_bonus",
+        "target": "self",
+        "events": ["on"],
+        "duration": 1,
+        "parameters": {
+            "power": {"amount": 4}
+        }
+    }, {
+        "mechanic": "stat_bonus",
+        "target": "self",
+        "events": ["off"],
+        "duration": 1,
+        "parameters": {
+            "power": {"amount": -4}
+        }
+    }]
+}]

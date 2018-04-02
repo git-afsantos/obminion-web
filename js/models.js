@@ -26,6 +26,7 @@
             this.instances = new models.UnitTeam();
             this.playerCollection = new models.UnitTeam();
             this.abilities = new models.AbilityCollection();
+            this.effects = new models.EffectCollection();
             this.zones = new models.ZoneCollection();
             this.missions = new models.MissionCollection();
             this.playerTeam = new models.BattleTeam(null, {id: "player"});
@@ -419,21 +420,26 @@
             this.trigger("battle:death", {emitter: this});
         },
 
-        addEffect = function (effect) {
+        addEffect: function (effect) {
             var effects = this.get("effects"),
                 prev = effects[effect.group];
             if (prev != null) {
                 return false;
             }
             effects[effect.group] = effect;
+            this.trigger("battle:effect_apply", {emitter: this, ability: effect});
             return true;
         },
 
-        removeEffect = function (effect) {
+        removeEffect: function (group) {
             var effects = this.get("effects"),
-                prev = effects[effect.group];
-            delete effects[effect.group];
-            return prev != null;
+                prev = effects[group];
+            delete effects[group];
+            if (prev != null) {
+                this.trigger("battle:effect_remove", {emitter: this, ability: prev});
+                return true;
+            }
+            return false;
         },
 
         isAlive: function () {
@@ -626,6 +632,12 @@
         model: models.AbilityTemplate,
 
         url: "data/abilities.json"
+    });
+
+    models.EffectCollection = Backbone.Collection.extend({
+        model: models.AbilityTemplate,
+
+        url: "data/effects.json"
     });
 
 

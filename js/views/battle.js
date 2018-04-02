@@ -478,6 +478,7 @@
             this.listenTo(this.model, "battle:end_phase", this.onBattleEndPhase);
             this.listenTo(this.model, "attack", this.onAttack);
             this.listenTo(this.model, "ability", this.onAbility);
+            this.listenTo(this.model, "effect", this.onEffect);
             this.listenTo(this.model, "death", this.onDeath);
             this.listenTo(this.model, "rotation:left", this.onRotateCounterClockwise);
             this.listenTo(this.model, "rotation:right", this.onRotateClockwise);
@@ -616,6 +617,24 @@
                 ability = this.currentEvent.ability;
             this.teams[team].triggerAbility(unit, ability).animate();
             this.notifications.notifyAbility(team, model, ability).animate();
+        },
+
+        onEffect: function (teamIndex, unitIndex, effectName) {
+            this.eventQueue.push({
+                animationFunction: this.animateEffect,
+                team: teamIndex,
+                unit: unitIndex,
+                effect: effectName
+            });
+        },
+
+        animateEffect: function () {
+            var team = this.currentEvent.team,
+                unit = this.currentEvent.unit,
+                model = this.teams[team].getModel(unit),
+                effect = this.currentEvent.effect;
+            this.teams[team].triggerAbility(unit, effect).animate();
+            this.notifications.notifyEffect(team, model, effect).animate();
         },
 
         onDeath: function (teamIndex, unitIndex) {
@@ -834,6 +853,12 @@
             return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
                                          + model.get("name") + " activates "
                                          + abilityName + ".");
+        },
+
+        notifyEffect: function (teamIndex, model, effectName) {
+            return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
+                                         + model.get("name") + " is affected by "
+                                         + effectName + ".");
         },
 
         notifyDeath: function (teamIndex, model) {

@@ -25,11 +25,6 @@ to functions of the animation manager, by this script.
     var Game;
 
     window.Game = {
-        data: {
-            species: null,
-            instances: null,
-            abilities: null
-        },
         Models: {},
         Views: {},
         state: null,
@@ -75,10 +70,13 @@ to functions of the animation manager, by this script.
         //BattleEngine.trigger("request", BattleEngine);
         Game.state.species.fetch();
         Game.state.abilities.fetch();
+        Game.state.effects.fetch();
         Game.state.zones.fetch();
         //BattleEngine.trigger("sync", BattleEngine);
 
         $("#start-button").on("click", function () {
+            Game.BattleEngine.setData(Game.state.species, Game.state.instances,
+                                      Game.state.abilities, Game.state.effects);
             Game.state.createCollection();
             Game.state.set("status", "idle");
             Game.state.setZone(Game.state.zones.first().id);

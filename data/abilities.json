@@ -52,11 +52,11 @@
     "name": "Blaze",
     "description": "Increases power when at low health.",
     "effects": [{
-        "mechanic": "buff_power",
+        "mechanic": "stat_bonus",
         "target": "self",
         "events": ["self health_low"],
         "parameters": {
-            "amount": 4
+            "power": {"amount": 4}
         }
     }]
 }, {
@@ -67,34 +67,24 @@
         "mechanic": "damage",
         "target": "opponent_adjacent",
         "events": ["self post_attack"],
-        "parameters": {
-            "amount": 2
-        }
+        "parameters": { "amount": 2 }
     }, {
         "mechanic": "damage",
         "target": "self_adjacent",
         "events": ["self post_attack"],
-        "parameters": {
-            "amount": 2
-        }
+        "parameters": { "amount": 2 }
     }]
 }, {
     "id": 12,
     "name": "Rampage",
     "description": "Increases power over time at the cost of health.",
     "effects": [{
-        "mechanic": "buff_power",
+        "mechanic": "stat_bonus",
         "target": "self",
         "events": ["self attack"],
         "parameters": {
-            "amount": 2
-        }
-    }, {
-        "mechanic": "debuff_health",
-        "target": "self",
-        "events": ["self attack"],
-        "parameters": {
-            "amount": 2
+            "health": {"amount": -2},
+            "power": {"amount": 2}
         }
     }]
 }, {
@@ -102,30 +92,32 @@
     "name": "Retaliate",
     "description": "Increases power when an ally dies.",
     "effects": [{
-        "mechanic": "buff_power",
+        "mechanic": "apply",
         "target": "self",
         "events": ["friend_others death"],
-        "parameters": {
-            "amount": 4
-        }
+        "parameters": { "effect": 2 }
     }]
 }, {
     "id": 14,
     "name": "Growth",
     "description": "Increases health and power when becoming active.",
     "effects": [{
-        "mechanic": "buff_power",
+        "mechanic": "stat_bonus",
         "target": "self",
         "events": ["self active"],
         "parameters": {
-            "amount": 1
+            "health": {"amount": 2},
+            "power": {"amount": 1}
         }
-    }, {
-        "mechanic": "buff_health",
-        "target": "self",
-        "events": ["self active"],
-        "parameters": {
-            "amount": 2
-        }
+    }]
+}, {
+    "id": 15,
+    "name": "Poison Sting",
+    "description": "After attacking, poisons the opponent.",
+    "effects": [{
+        "mechanic": "apply",
+        "target": "opponent",
+        "events": ["self post_attack"],
+        "parameters": { "effect": 1 }
     }]
 }]
