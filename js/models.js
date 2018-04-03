@@ -587,7 +587,10 @@
         cleanup: function () {
             var dead = this.filter(this._predicate_isDead),
                 i = dead.length;
-            while (i--) this._dead.push(dead[i]);
+            while (i--) {
+                this._dead.push(dead[i]);
+                dead[i].kill();
+            }
             this.remove(dead);
             return this;
         },

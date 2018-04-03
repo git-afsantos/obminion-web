@@ -411,13 +411,13 @@
     };
 
     EffectHandler.prototype.triggerEffectForThisAbility = function (args) {
-        if (args.ability === this.ability) {
+        if (args.ability.id === this.ability.id) {
             this.triggerEffect(args);
         }
     };
 
     EffectHandler.prototype.onRemoveThisAbility = function (args) {
-        if (args.ability === this.ability) {
+        if (args.ability.id === this.ability.id) {
             this.onReset();
         }
     };
@@ -481,20 +481,22 @@
             }
         },
         apply: function () {
-            var j, h, t, c,
+            var j, h, t, c, d,
                 p = this.parameters,
                 targets = this.target(),
                 i = targets.length,
-                e = this.mechanics.data.effects.get(p.effect),
-                aes = e.get("effects"),
+                effect = this.mechanics.data.effects.get(p.effect),
+                aes = effect.get("effects"),
                 len = aes.length;
             while (i--) {
                 t = targets[i];
-                c = _.clone(e.attributes);
+                c = _.clone(effect.attributes);
                 c.counter = len;
                 if (t.get("effects")[c.group] == null) {
                     for (j = 0; j < len; ++j) {
-                        h = new EffectHandler(this.mechanics, t, e, "effect", _.clone(aes[j]));
+                        d = _.clone(aes[j]);
+                        d.group = c.group;
+                        h = new EffectHandler(this.mechanics, t, effect, "effect", d);
                         h.rebindToEvents();
                         t._handlers.push(h);
                     }
@@ -533,11 +535,11 @@
             }
             while (i--) {
                 if (health > 0) targets[i].plusHealth(health);
-                else if (health < 0) targets[i].minusHealth(health);
+                else if (health < 0) targets[i].minusHealth(-health);
                 if (power > 0) targets[i].plusPower(power);
-                else if (power < 0) targets[i].minusPower(power);
+                else if (power < 0) targets[i].minusPower(-power);
                 if (speed > 0) targets[i].plusSpeed(speed);
-                else if (speed < 0) targets[i].minusSpeed(speed);
+                else if (speed < 0) targets[i].minusSpeed(-speed);
             }
         }
     };
