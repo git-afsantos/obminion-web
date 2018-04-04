@@ -31,6 +31,13 @@
         this._teams[i] = team;
         team._teamId = i;
         this.listenTo(team, "remove", this.onUnitRemove);
+        this.listenTo(team, "battle:rotate_right", this.onRotateRight);
+        this.listenTo(team, "battle:rotate_left", this.onRotateLeft);
+        this.listenTo(team, "change:maxHealth", this.onUnitChange);
+        this.listenTo(team, "change:power", this.onUnitChange);
+        this.listenTo(team, "change:speed", this.onUnitChange);
+        this.listenTo(team, "change:template", this.onUnitChange);
+        this.listenTo(team, "change:type", this.onUnitChange);
         // this.trigger("team:set", i, team);
         return this;
     };
@@ -110,6 +117,14 @@
         return this;
     };
 
+    BattleMechanics.prototype.rotate = function (teamIndex, clockwise) {
+        var team = this._teams[teamIndex];
+        if (team.canRotate()) {
+            if (clockwise) team.rotateRight();
+            else team.rotateLeft();
+        }
+    };
+
     BattleMechanics.prototype.attack = function (teamIndex) {
         var u, t, damage, type, atkArgs, defArgs;
         if (!arguments.length) { teamIndex = this._turn; }
@@ -176,12 +191,24 @@
         return this;
     };
 
+    BattleMechanics.prototype.onUnitChange = function (unit, options) {
+        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit));
+    };
+
     BattleMechanics.prototype.onUnitRemove = function (unit, team, options) {
         var hs = unit._handlers, i = hs.length;
         while (i--) {
             hs[i].stopListening();
         }
         this.trigger("death", unit, team, options.index);
+    };
+
+    BattleMechanics.prototype.onRotateRight = function (args) {
+        this.trigger("rotation:right", args.emitter);
+    };
+
+    BattleMechanics.prototype.onRotateLeft = function (args) {
+        this.trigger("rotation:left", args.emitter);
     };
 
     BattleMechanics.prototype._opposing = function (unit) {
@@ -324,6 +351,17 @@
             var c = this._opposing(unit);
             return function () { return c.without(c.getActive()); }
         },
+        all_adjacent: function (unit) {
+            var c1 = unit.collection, c2 = this._opposing(unit);
+            return function () {
+                var targets = [];
+                if (c1.length > 2) targets.push(c1.getAtLeft());
+                if (c1.length > 1) targets.push(c1.getAtRight());
+                if (c2.length > 2) targets.push(c2.getAtLeft());
+                if (c2.length > 1) targets.push(c2.getAtRight());
+                return targets;
+            };
+        }
     };
 
 
@@ -340,7 +378,7 @@
         if (!unit._ability) return;
         var e, i, len, aes = unit._ability.get("effects");
         for (i = 0, len = aes.length; i < len; ++i) {
-            e = new EffectHandler(this, unit, unit._ability, "ability", aes[i]);
+            e = new EffectHandler(this, unit, unit, unit._ability, "ability", aes[i]);
             e.rebindToEvents();
             unit._handlers.push(e);
         }
@@ -350,8 +388,9 @@
 
     ////////////////////////////////////////////////////////////////////////////
 
-    EffectHandler = function (mechanics, unit, ability, channel, effect) {
+    EffectHandler = function (mechanics, source, unit, ability, channel, effect) {
         this.mechanics = mechanics;
+        this.source = source;
         this.unit = unit;
         this.ability = ability;
         this.channel = channel;
@@ -387,6 +426,9 @@
                 case "mechanics":
                     this.listenTo(this.mechanics, e[1], this.triggerEffect);
                     break;
+                case "source":
+                    this.listenTo(this.source, e[1], this.triggerEffect);
+                    break;
                 default:
                     t = this.mechanics.target(this.unit, e[0])();
                     for (j = t.length; j--;) {
@@ -398,6 +440,27 @@
         this.listenTo(this.unit, "battle:" + this.channel + "_remove", this.onRemoveThisAbility);
         this.listenTo(this.mechanics, "round_end", this.tick);
         this.listenTo(this.mechanics, "reset", this.onReset);
+    };
+
+    EffectHandler.prototype.expireOn = function (events) {
+        var e, t, j, i = events.length;
+        while (i--) {
+            e = events[i].split(" ");
+            switch (e[0]) {
+                case "mechanics":
+                    this.listenTo(this.mechanics, e[1], this.expire);
+                    break;
+                case "source":
+                    this.listenTo(this.source, e[1], this.expire);
+                    break;
+                default:
+                    t = this.mechanics.target(this.unit, e[0])();
+                    for (j = t.length; j--;) {
+                        this.listenTo(t[j], "battle:" + e[1], this.expire);
+                    }
+                    break;
+            }
+        }
     };
 
     EffectHandler.prototype.triggerEffect = function (args) {
@@ -426,6 +489,10 @@
         this.stopListening();
         var i = this.unit._handlers.indexOf(this);
         this.unit._handlers.splice(i, 1);
+        this.unit = null;
+        this.source = null;
+        this.mechanics = null;
+        this.ability = null;
     };
 
     EffectHandler.prototype.tick = function () {
@@ -439,6 +506,10 @@
                 }
             }
         }
+    };
+
+    EffectHandler.prototype.expire = function () {
+        this.unit.removeEffect(this.group);
     };
 
     EffectHandler.prototype.mechanic = function () {};
@@ -487,7 +558,8 @@
                 i = targets.length,
                 effect = this.mechanics.data.effects.get(p.effect),
                 aes = effect.get("effects"),
-                len = aes.length;
+                len = aes.length,
+                exp = effect.get("expire") || [];
             while (i--) {
                 t = targets[i];
                 c = _.clone(effect.attributes);
@@ -496,8 +568,9 @@
                     for (j = 0; j < len; ++j) {
                         d = _.clone(aes[j]);
                         d.group = c.group;
-                        h = new EffectHandler(this.mechanics, t, effect, "effect", d);
+                        h = new EffectHandler(this.mechanics, this.source, t, effect, "effect", d);
                         h.rebindToEvents();
+                        h.expireOn(exp);
                         t._handlers.push(h);
                     }
                 }
@@ -583,10 +656,13 @@
             this._stateMachine.state("battle:between_rounds", this._state_between_rounds);
             this._stateMachine.state("battle:victory", this._state_victory);
             this._stateMachine.state("battle:defeat", this._state_defeat);
+            this.listenTo(this._mechanics, "rotation:right", this._onRotateRight);
+            this.listenTo(this._mechanics, "rotation:left", this._onRotateLeft);
             this.listenTo(this._mechanics, "attack", this._onAttack);
             this.listenTo(this._mechanics, "ability", this._onAbility);
             this.listenTo(this._mechanics, "effect", this._onEffect);
             this.listenTo(this._mechanics, "death", this._onDeath);
+            this.listenTo(this._mechanics, "change", this._onChange);
             this.listenTo(this._mechanics, "damage", this._onDamage);
             this.listenTo(this._mechanics, "heal", this._onHeal);
         },
@@ -621,25 +697,16 @@
         },
 
         selectAction: function (action) {
-            var team = this._mechanics.team(0);
             switch (action) {
                 case "SURRENDER":
                     this._stateMachine.state("battle:defeat");
                     this.trigger("battle:end_phase", this);
                     return this;
                 case "ROTATE_COUNTER":
-                    if (team.canRotate()) {
-//                        console.log("Rotating left.");
-                        team.rotateLeft();
-                        this.trigger("rotation:left", 0);
-                    }
+                    this._mechanics.rotate(0, false);
                     break;
                 case "ROTATE_CLOCK":
-                    if (team.canRotate()) {
-//                        console.log("Rotating right.");
-                        team.rotateRight();
-                        this.trigger("rotation:right", 0);
-                    }
+                    this._mechanics.rotate(0, true);
                     break;
                 case "ATTACK":
 //                    console.log("No rotation.");
@@ -755,6 +822,14 @@
             //this.trigger("battle:end_phase", this);
         },
 
+        _onRotateRight: function (team) {
+            this.trigger("rotation:right", team._teamId);
+        },
+
+        _onRotateLeft: function (team) {
+            this.trigger("rotation:left", team._teamId);
+        },
+
         _onAttack: function (attacker, defender) {
             this.trigger("attack", attacker.collection._teamId, defender.collection._teamId);
         },
@@ -771,6 +846,10 @@
 
         _onDeath: function (unit, team, index) {
             this.trigger("death", team._teamId, index);
+        },
+
+        _onChange: function (unit, team, index) {
+            this.trigger("update", team._teamId, index, unit.toSimplifiedJSON());
         },
 
         _onDamage: function (unit, amount, type) {

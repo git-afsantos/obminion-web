@@ -1,46 +1,82 @@
 [{
     "id":         1,
     "portrait":   "000",
-    "name":       "Test 0",
-    "type":       "BEAST",
+    "name":       "Tester",
+    "type":       "NORMAL",
     "health":     20,
     "power":      10,
     "speed":      10,
     "abilities":  [13]
 }, {
     "id":         2,
-    "portrait":   "001",
-    "name":       "Test 1",
-    "type":       "BEAST",
-    "health":     50,
-    "power":      8,
+    "portrait":   "006",
+    "name":       "Charizard",
+    "type":       "FIRE",
+    "health":     38,
+    "power":      12,
     "speed":      10,
-    "abilities":  [3]
+    "abilities":  [10]
 }, {
     "id":         3,
-    "portrait":   "004",
-    "name":       "Test 2",
-    "type":       "BEAST",
-    "health":     36,
+    "portrait":   "130",
+    "name":       "Gyarados",
+    "type":       "WATER",
+    "health":     39,
     "power":      12,
-    "speed":      12,
-    "abilities":  [2]
+    "speed":      8,
+    "abilities":  [12]
 }, {
     "id":         4,
-    "portrait":   "007",
-    "name":       "Test 3",
-    "type":       "BEAST",
-    "health":     50,
-    "power":      10,
-    "speed":      8,
-    "abilities":  [4]
+    "portrait":   "135",
+    "name":       "Jolteon",
+    "type":       "ELECTRIC",
+    "health":     36,
+    "power":      11,
+    "speed":      13,
+    "abilities":  [11]
 }, {
     "id":         5,
-    "portrait":   "025",
-    "name":       "Test 4",
-    "type":       "BEAST",
-    "health":     32,
-    "power":      12,
-    "speed":      16,
-    "abilities":  []
+    "portrait":   "105",
+    "name":       "Marowak",
+    "type":       "GROUND",
+    "health":     38,
+    "power":      8,
+    "speed":      5,
+    "abilities":  [13]
+}, {
+    "id":         6,
+    "portrait":   "003",
+    "name":       "Venusaur",
+    "type":       "GRASS",
+    "health":     38,
+    "power":      10,
+    "speed":      8,
+    "abilities":  [14]
+}, {
+    "id":         7,
+    "portrait":   "015",
+    "name":       "Beedrill",
+    "type":       "POISON",
+    "health":     30,
+    "power":      10,
+    "speed":      10,
+    "abilities":  [15]
+}, {
+    "id":         8,
+    "portrait":   "128",
+    "name":       "Tauros",
+    "type":       "NORMAL",
+    "health":     38,
+    "power":      10,
+    "speed":      11,
+    "abilities":  [4]
+}, {
+    "id":         9,
+    "portrait":   "127",
+    "name":       "Pinsir",
+    "type":       "BUG",
+    "health":     38,
+    "power":      13,
+    "speed":      9,
+    "abilities":  [16]
 }]

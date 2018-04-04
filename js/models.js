@@ -98,27 +98,10 @@
             this.instances.addFromTemplate(this.species.get(3));
             this.instances.addFromTemplate(this.species.get(4));
             this.instances.addFromTemplate(this.species.get(5));
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            this.playerCollection.addFromTemplate(this.species.get(2));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            this.playerCollection.addFromTemplate(this.species.get(2));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            this.playerCollection.addFromTemplate(this.species.get(2));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            this.playerCollection.addFromTemplate(this.species.get(1));
-            this.playerCollection.addFromTemplate(this.species.get(2));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(3));
-            this.playerCollection.addFromTemplate(this.species.get(1));
+            this.playerCollection.addFromTemplate(this.species.get(6));
+            this.playerCollection.addFromTemplate(this.species.get(7));
+            this.playerCollection.addFromTemplate(this.species.get(8));
+            this.playerCollection.addFromTemplate(this.species.get(9));
         },
 
         createBattle: function () {
@@ -341,7 +324,7 @@
                 rotateCounter: 0,
                 effects:    {}
             }, {silent: true});
-            this.listenTo(this._maxHealth, "change", this.onMaxHealthChange);
+            //this.listenTo(this._maxHealth, "change", this.onMaxHealthChange);
             this.listenTo(this._power, "change", this.onPowerChange);
             this.listenTo(this._speed, "change", this.onSpeedChange);
         },
@@ -351,14 +334,22 @@
             var hp = this.get("health");
             this._maxHealth.plus(amount);
             if (hp > 0) {
-                this.set("health", Math.min(hp + amount, this._maxHealth.actual()));
+                this.set({
+                    health: Math.min(hp + amount, this._maxHealth.actual()),
+                    maxHealth: this._maxHealth.actual()
+                });
+            } else {
+                this.set("maxHealth", this._maxHealth.actual());
             }
             return this;
         },
 
         minusHealth: function (amount) {
             this._maxHealth.minus(amount);
-            this.set("health", Math.min(this._maxHealth.actual(), this.get("health")));
+            this.set({
+                health: Math.min(this._maxHealth.actual(), this.get("health")),
+                maxHealth: this._maxHealth.actual()
+            });
             return this;
         },
 
@@ -585,40 +576,40 @@
         },
 
         canRotate: function () {
-            return this.length > 1;
+            return this.length > 1 && this.at(0).canRotate();
         },
 
         rotateLeft: function () {
             var a = this.models,
-                m = a.shift(),
+                p = a.shift(),
+                m = this.at(0),
                 args = {
                     emitter: this,
-                    previous: m,
-                    active: this.at(0)
+                    previous: p,
+                    active: m
                 };
-            a.push(m);
+            a.push(p);
             this.trigger("battle:rotate", args);
             this.trigger("battle:rotate_left", args);
-            this.at(0).trigger("battle:active", {
-                emitter: this.at(0), previous: m
-            });
+            p.trigger("battle:inactive", {emitter: p, active: m});
+            m.trigger("battle:active", {emitter: m, previous: p});
             return this;
         },
 
         rotateRight: function () {
             var a = this.models,
                 m = a.pop(),
+                p = this.at(0),
                 args = {
                     emitter: this,
-                    previous: this.at(0),
+                    previous: p,
                     active: m
                 };
             a.unshift(m);
             this.trigger("battle:rotate", args);
             this.trigger("battle:rotate_right", args);
-            m.trigger("battle:active", {
-                emitter: m, previous: this.at(1)
-            });
+            p.trigger("battle:inactive", {emitter: p, active: m});
+            m.trigger("battle:active", {emitter: m, previous: p});
             return this;
         },
 
@@ -823,11 +814,215 @@
                 default: return models.Multiplier.NORMAL;
             }
         },
-        GRASS: function (attackingType) {
-            return models.Multiplier.NORMAL;
-        },
         NORMAL: function (attackingType) {
-            return models.Multiplier.NORMAL;
+            switch (attackingType) {
+                case "FIGHTING": return models.Multiplier.PLUS;
+                case "GHOST": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        GRASS: function (attackingType) {
+            switch (attackingType) {
+                case "FLYING": return models.Multiplier.PLUS;
+                case "POISON": return models.Multiplier.PLUS;
+                case "BUG": return models.Multiplier.PLUS;
+                case "FIRE": return models.Multiplier.PLUS;
+                case "ICE": return models.Multiplier.PLUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "WATER": return models.Multiplier.MINUS;
+                case "ELECTRIC": return models.Multiplier.MINUS;
+                case "GROUND": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        FIRE: function (attackingType) {
+            switch (attackingType) {
+                case "WATER": return models.Multiplier.PLUS;
+                case "ROCK": return models.Multiplier.PLUS;
+                case "GROUND": return models.Multiplier.PLUS;
+                case "FIRE": return models.Multiplier.MINUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "BUG": return models.Multiplier.MINUS;
+                case "ICE": return models.Multiplier.MINUS;
+                case "STEEL": return models.Multiplier.MINUS;
+                case "FAIRY": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        WATER: function (attackingType) {
+            switch (attackingType) {
+                case "ELECTRIC": return models.Multiplier.PLUS;
+                case "GRASS": return models.Multiplier.PLUS;
+                case "FIRE": return models.Multiplier.MINUS;
+                case "WATER": return models.Multiplier.MINUS;
+                case "STEEL": return models.Multiplier.MINUS;
+                case "ICE": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        ELECTRIC: function (attackingType) {
+            switch (attackingType) {
+                case "GROUND": return models.Multiplier.PLUS;
+                case "ELECTRIC": return models.Multiplier.MINUS;
+                case "FLYING": return models.Multiplier.MINUS;
+                case "STEEL": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        FIGHTING: function (attackingType) {
+            switch (attackingType) {
+                case "FLYING": return models.Multiplier.PLUS;
+                case "PSYCHIC": return models.Multiplier.PLUS;
+                case "FAIRY": return models.Multiplier.PLUS;
+                case "DARK": return models.Multiplier.MINUS;
+                case "BUG": return models.Multiplier.MINUS;
+                case "ROCK": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        FLYING: function (attackingType) {
+            switch (attackingType) {
+                case "ELECTRIC": return models.Multiplier.PLUS;
+                case "ICE": return models.Multiplier.PLUS;
+                case "ROCK": return models.Multiplier.PLUS;
+                case "BUG": return models.Multiplier.MINUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "GROUND": return models.Multiplier.MINUS;
+                case "FIGHTING": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        BUG: function (attackingType) {
+            switch (attackingType) {
+                case "FIRE": return models.Multiplier.PLUS;
+                case "FLYING": return models.Multiplier.PLUS;
+                case "ROCK": return models.Multiplier.PLUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "GROUND": return models.Multiplier.MINUS;
+                case "FIGHTING": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        POISON: function (attackingType) {
+            switch (attackingType) {
+                case "PSYCHIC": return models.Multiplier.PLUS;
+                case "GROUND": return models.Multiplier.PLUS;
+                case "POISON": return models.Multiplier.MINUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "FIGHTING": return models.Multiplier.MINUS;
+                case "BUG": return models.Multiplier.MINUS;
+                case "FAIRY": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        GROUND: function (attackingType) {
+            switch (attackingType) {
+                case "GRASS": return models.Multiplier.PLUS;
+                case "WATER": return models.Multiplier.PLUS;
+                case "ICE": return models.Multiplier.PLUS;
+                case "ROCK": return models.Multiplier.MINUS;
+                case "ELECTRIC": return models.Multiplier.MINUS;
+                case "POISON": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        ROCK: function (attackingType) {
+            switch (attackingType) {
+                case "GRASS": return models.Multiplier.PLUS;
+                case "WATER": return models.Multiplier.PLUS;
+                case "GROUND": return models.Multiplier.PLUS;
+                case "FIGHTING": return models.Multiplier.PLUS;
+                case "STEEL": return models.Multiplier.PLUS;
+                case "FIRE": return models.Multiplier.MINUS;
+                case "FLYING": return models.Multiplier.MINUS;
+                case "NORMAL": return models.Multiplier.MINUS;
+                case "POISON": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        PSYCHIC: function (attackingType) {
+            switch (attackingType) {
+                case "DARK": return models.Multiplier.PLUS;
+                case "BUG": return models.Multiplier.PLUS;
+                case "GHOST": return models.Multiplier.PLUS;
+                case "PSYCHIC": return models.Multiplier.MINUS;
+                case "FIGHTING": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        DARK: function (attackingType) {
+            switch (attackingType) {
+                case "BUG": return models.Multiplier.PLUS;
+                case "FIGHTING": return models.Multiplier.PLUS;
+                case "FAIRY": return models.Multiplier.PLUS;
+                case "PSYCHIC": return models.Multiplier.MINUS;
+                case "DARK": return models.Multiplier.MINUS;
+                case "GHOST": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        STEEL: function (attackingType) {
+            switch (attackingType) {
+                case "FIRE": return models.Multiplier.PLUS;
+                case "FIGHTING": return models.Multiplier.PLUS;
+                case "GROUND": return models.Multiplier.PLUS;
+                case "NORMAL": return models.Multiplier.MINUS;
+                case "FLYING": return models.Multiplier.MINUS;
+                case "POISON": return models.Multiplier.MINUS;
+                case "ROCK": return models.Multiplier.MINUS;
+                case "BUG": return models.Multiplier.MINUS;
+                case "STEEL": return models.Multiplier.MINUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "ICE": return models.Multiplier.MINUS;
+                case "PSYCHIC": return models.Multiplier.MINUS;
+                case "DRAGON": return models.Multiplier.MINUS;
+                case "FAIRY": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        ICE: function (attackingType) {
+            switch (attackingType) {
+                case "FIRE": return models.Multiplier.PLUS;
+                case "ROCK": return models.Multiplier.PLUS;
+                case "FIGHTING": return models.Multiplier.PLUS;
+                case "STEEL": return models.Multiplier.PLUS;
+                case "ICE": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        FAIRY: function (attackingType) {
+            switch (attackingType) {
+                case "POISON": return models.Multiplier.PLUS;
+                case "STEEL": return models.Multiplier.PLUS;
+                case "DARK": return models.Multiplier.MINUS;
+                case "DRAGON": return models.Multiplier.MINUS;
+                case "FIGHTING": return models.Multiplier.MINUS;
+                case "BUG": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        DRAGON: function (attackingType) {
+            switch (attackingType) {
+                case "DRAGON": return models.Multiplier.PLUS;
+                case "ICE": return models.Multiplier.PLUS;
+                case "FAIRY": return models.Multiplier.PLUS;
+                case "GRASS": return models.Multiplier.MINUS;
+                case "WATER": return models.Multiplier.MINUS;
+                case "FIRE": return models.Multiplier.MINUS;
+                case "ELECTRIC": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
+        },
+        GHOST: function (attackingType) {
+            switch (attackingType) {
+                case "DARK": return models.Multiplier.PLUS;
+                case "GHOST": return models.Multiplier.PLUS;
+                case "NORMAL": return models.Multiplier.MINUS;
+                case "FIGHTING": return models.Multiplier.MINUS;
+                case "POISON": return models.Multiplier.MINUS;
+                case "BUG": return models.Multiplier.MINUS;
+                default: return models.Multiplier.NORMAL;
+            }
         }
     };
 

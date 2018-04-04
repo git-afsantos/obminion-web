@@ -65,19 +65,14 @@
     "description": "Attacks also damage adjacent targets and allies.",
     "effects": [{
         "mechanic": "damage",
-        "target": "opponent_adjacent",
-        "events": ["self post_attack"],
-        "parameters": { "amount": 2 }
-    }, {
-        "mechanic": "damage",
-        "target": "self_adjacent",
+        "target": "all_adjacent",
         "events": ["self post_attack"],
         "parameters": { "amount": 2 }
     }]
 }, {
     "id": 12,
     "name": "Rampage",
-    "description": "Increases power over time at the cost of health.",
+    "description": "Can only attack. Attacking increases power at the cost of health.",
     "effects": [{
         "mechanic": "stat_bonus",
         "target": "self",
@@ -86,6 +81,16 @@
             "health": {"amount": -2},
             "power": {"amount": 2}
         }
+    }, {
+        "mechanic": "disable_rotate",
+        "target": "self",
+        "events": ["self active"],
+        "parameters": {}
+    }, {
+        "mechanic": "enable_rotate",
+        "target": "self",
+        "events": ["self inactive"],
+        "parameters": {}
     }]
 }, {
     "id": 13,
@@ -119,5 +124,15 @@
         "target": "opponent",
         "events": ["self post_attack"],
         "parameters": { "effect": 1 }
+    }]
+}, {
+    "id": 16,
+    "name": "Vice Grip",
+    "description": "Damages the opponent each round. The opponent cannot retreat.",
+    "effects": [{
+        "mechanic": "apply",
+        "target": "opponent",
+        "events": ["self active"],
+        "parameters": { "effect": 3 }
     }]
 }]

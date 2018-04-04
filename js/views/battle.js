@@ -480,6 +480,7 @@
             this.listenTo(this.model, "ability", this.onAbility);
             this.listenTo(this.model, "effect", this.onEffect);
             this.listenTo(this.model, "death", this.onDeath);
+            this.listenTo(this.model, "update", this.onUnitUpdate);
             this.listenTo(this.model, "rotation:left", this.onRotateCounterClockwise);
             this.listenTo(this.model, "rotation:right", this.onRotateClockwise);
             this.listenTo(this.model, "damage", this.onDamage);
@@ -651,6 +652,24 @@
                 model = this.teams[team].getModel(unit);
             this.teams[team].killUnit(unit).animate();
             this.notifications.notifyDeath(team, model).animate();
+        },
+
+        onUnitUpdate: function (teamIndex, unitIndex, attributes) {
+            this.eventQueue.push({
+                animationFunction: this.animateUnitUpdate,
+                team: teamIndex,
+                unit: unitIndex,
+                attributes: attributes
+            });
+        },
+
+        animateUnitUpdate: function () {
+            var team = this.currentEvent.team,
+                unit = this.currentEvent.unit,
+                model = this.teams[team].getModel(unit);
+            // TODO fix this hack
+            model.set({health: this.currentEvent.attributes.health}, {silent: true});
+            model.set(this.currentEvent.attributes);
         },
 
         onRotateClockwise: function (teamIndex) {

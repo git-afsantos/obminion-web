@@ -22,7 +22,7 @@
         "mechanic": "stat_bonus",
         "target": "self",
         "events": ["on"],
-        "duration": 1,
+        "duration": 2,
         "parameters": {
             "power": {"amount": 4}
         }
@@ -30,9 +30,33 @@
         "mechanic": "stat_bonus",
         "target": "self",
         "events": ["off"],
-        "duration": 1,
+        "duration": 2,
         "parameters": {
             "power": {"amount": -4}
         }
+    }]
+}, {
+    "id": 3,
+    "group": "grip",
+    "name": "Vice Grip",
+    "description": "Deals damage over time. Cannot retreat.",
+    "expire": ["source inactive", "self inactive"],
+    "effects": [{
+        "mechanic": "damage",
+        "target": "self",
+        "events": ["mechanics round_end"],
+        "parameters": {
+            "amount": 2
+        }
+    }, {
+        "mechanic": "disable_rotate",
+        "target": "self",
+        "events": ["on"],
+        "parameters": {}
+    }, {
+        "mechanic": "enable_rotate",
+        "target": "self",
+        "events": ["off"],
+        "parameters": {}
     }]
 }]
