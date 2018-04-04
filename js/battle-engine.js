@@ -541,6 +541,30 @@
                 if (speed > 0) targets[i].plusSpeed(speed);
                 else if (speed < 0) targets[i].minusSpeed(-speed);
             }
+        },
+        enable_rotate: function () {
+            var targets = this.target(), i = targets.length;
+            while (i--) {
+                targets[i].enableRotate();
+            }
+        },
+        disable_rotate: function () {
+            var targets = this.target(), i = targets.length;
+            while (i--) {
+                targets[i].disableRotate();
+            }
+        },
+        enable_attack: function () {
+            var targets = this.target(), i = targets.length;
+            while (i--) {
+                targets[i].enableAttack();
+            }
+        },
+        disable_attack: function () {
+            var targets = this.target(), i = targets.length;
+            while (i--) {
+                targets[i].disableAttack();
+            }
         }
     };
 

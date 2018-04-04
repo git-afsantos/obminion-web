@@ -36,7 +36,7 @@
     }]
 }, {
     "id": 4,
-    "name": "Cleave",
+    "name": "Trample",
     "description": "Attacks also deal some damage to adjacent targets.",
     "effects": [{
         "mechanic": "damage",

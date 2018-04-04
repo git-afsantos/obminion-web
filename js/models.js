@@ -337,6 +337,8 @@
                 power:      this._power.actual(),
                 speed:      this._speed.actual(),
                 ability:    this._instance.get("ability"),
+                attackCounter: 0,
+                rotateCounter: 0,
                 effects:    {}
             }, {silent: true});
             this.listenTo(this._maxHealth, "change", this.onMaxHealthChange);
@@ -380,6 +382,53 @@
             return this;
         },
 
+        canAttack: function () {
+            return this.get("attackCounter") === 0;
+        },
+
+        canRotate: function () {
+            return this.get("rotateCounter") === 0;
+        },
+
+        enableAttack: function () {
+            var previous = this.get("attackCounter");
+            if (previous > 0) {
+                this.set("attackCounter", previous - 1);
+                if (previous === 1) {
+                    this.trigger("battle:can_attack", {emitter: this});
+                }
+            }
+            return this;
+        },
+
+        disableAttack: function () {
+            var previous = this.get("attackCounter");
+            this.set("attackCounter", previous + 1);
+            if (previous === 0) {
+                this.trigger("battle:cannot_attack", {emitter: this});
+            }
+            return this;
+        },
+
+        enableRotate: function () {
+            var previous = this.get("rotateCounter");
+            if (previous > 0) {
+                this.set("rotateCounter", previous - 1);
+                if (previous === 1) {
+                    this.trigger("battle:can_rotate", {emitter: this});
+                }
+            }
+            return this;
+        },
+
+        disableRotate: function () {
+            var previous = this.get("rotateCounter");
+            this.set("rotateCounter", previous + 1);
+            if (previous === 0) {
+                this.trigger("battle:cannot_rotate", {emitter: this});
+            }
+            return this;
+        },
 
         damage: function (amount, type) {
             type = type || "?";
