@@ -12,7 +12,7 @@
     "repeatable": false,
     "prerequisites": [],
     "opponent": [
-        { "template": 1 },
+        { "template": 1, "health": 40, "power": 12 },
         { "template": 1, "health": 80 }
     ]
 }, {

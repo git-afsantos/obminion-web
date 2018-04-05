@@ -6,7 +6,7 @@
     "health":     20,
     "power":      10,
     "speed":      10,
-    "abilities":  [13]
+    "abilities":  []
 }, {
     "id":         2,
     "portrait":   "006",

@@ -666,9 +666,12 @@
         animateUnitUpdate: function () {
             var team = this.currentEvent.team,
                 unit = this.currentEvent.unit,
-                model = this.teams[team].getModel(unit);
+                model = this.teams[team].getModel(unit),
+                attr = this.currentEvent.attributes;
             // TODO fix this hack
-            model.set({health: this.currentEvent.attributes.health}, {silent: true});
+            if (attr.health != null) {
+                model.set({health: attr.health}, {silent: true});
+            }
             model.set(this.currentEvent.attributes);
         },
 

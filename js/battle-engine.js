@@ -33,11 +33,11 @@
         this.listenTo(team, "remove", this.onUnitRemove);
         this.listenTo(team, "battle:rotate_right", this.onRotateRight);
         this.listenTo(team, "battle:rotate_left", this.onRotateLeft);
-        this.listenTo(team, "change:maxHealth", this.onUnitChange);
-        this.listenTo(team, "change:power", this.onUnitChange);
-        this.listenTo(team, "change:speed", this.onUnitChange);
-        this.listenTo(team, "change:template", this.onUnitChange);
-        this.listenTo(team, "change:type", this.onUnitChange);
+        this.listenTo(team, "change:maxHealth", this.onUnitChangeHealth);
+        this.listenTo(team, "change:power", this.onUnitChangePower);
+        this.listenTo(team, "change:speed", this.onUnitChangeSpeed);
+        this.listenTo(team, "change:template", this.onUnitChangeTemplate);
+        this.listenTo(team, "change:type", this.onUnitChangeType);
         // this.trigger("team:set", i, team);
         return this;
     };
@@ -151,6 +151,7 @@
             damage = unit.damage(amount, type), // <-- things happen here
             m2 = unit._maxHealth.actual(),
             rh2 = unit.get("health") / m2;
+        this.trigger("damage", unit, damage, type);
         if (rh1 > 0.5) {
             if (rh2 <= 0.5) {
                 unit.trigger("battle:health_low", {emitter: unit});
@@ -161,7 +162,6 @@
                 unit.trigger("battle:health_high", {emitter: unit});
             }
         }
-        this.trigger("damage", unit, damage, type);
         return damage;
     };
 
@@ -171,6 +171,7 @@
             damage = unit.heal(amount, type), // <-- things happen here
             m2 = unit._maxHealth.actual(),
             rh2 = unit.get("health") / m2;
+        this.trigger("heal", unit, damage, type);
         if (rh1 > 0.5) {
             if (rh2 <= 0.5) {
                 unit.trigger("battle:health_low", {emitter: unit});
@@ -181,24 +182,26 @@
                 unit.trigger("battle:health_high", {emitter: unit});
             }
         }
-        this.trigger("heal", unit, damage, type);
         return damage;
     };
 
     BattleMechanics.prototype.cleanup = function () {
-        var i = this._teams.length;
-        while (i--) this._teams[i].cleanup();
+        var p, u, i = this._teams.length;
+        while (i--) {
+            p = this._teams[i].getActive();
+            this._teams[i].cleanup();
+            u = this._teams[i].getActive();
+            if (u != null && p.id !== u.id) {
+                u.trigger("battle:active", {emitter: u, previous: p});
+            }
+        }
         return this;
     };
 
-    BattleMechanics.prototype.onUnitChange = function (unit, options) {
-        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit));
-    };
-
     BattleMechanics.prototype.onUnitRemove = function (unit, team, options) {
-        var hs = unit._handlers, i = hs.length;
-        while (i--) {
-            hs[i].stopListening();
+        var hs = unit._handlers;
+        while (hs.length > 0) {
+            hs[hs.length - 1].onReset();
         }
         this.trigger("death", unit, team, options.index);
     };
@@ -209,6 +212,36 @@
 
     BattleMechanics.prototype.onRotateLeft = function (args) {
         this.trigger("rotation:left", args.emitter);
+    };
+
+    BattleMechanics.prototype.onUnitChangeHealth = function (unit) {
+        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit), {
+            health: unit.get("health"), maxHealth: unit.get("maxHealth")
+        });
+    };
+
+    BattleMechanics.prototype.onUnitChangePower = function (unit) {
+        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit), {
+            power: unit.get("power")
+        });
+    };
+
+    BattleMechanics.prototype.onUnitChangeSpeed = function (unit) {
+        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit), {
+            speed: unit.get("speed")
+        });
+    };
+
+    BattleMechanics.prototype.onUnitChangeTemplate = function (unit) {
+        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit), {
+            template: unit.get("template")
+        });
+    };
+
+    BattleMechanics.prototype.onUnitChangeType = function (unit) {
+        this.trigger("change", unit, unit.collection, unit.collection.indexOf(unit), {
+            type: unit.get("type")
+        });
     };
 
     BattleMechanics.prototype._opposing = function (unit) {
@@ -451,7 +484,7 @@
                     this.listenTo(this.mechanics, e[1], this.expire);
                     break;
                 case "source":
-                    this.listenTo(this.source, e[1], this.expire);
+                    this.listenTo(this.source, "battle:" + e[1], this.expire);
                     break;
                 default:
                     t = this.mechanics.target(this.unit, e[0])();
@@ -509,7 +542,11 @@
     };
 
     EffectHandler.prototype.expire = function () {
-        this.unit.removeEffect(this.group);
+        if (this.unit != null) {
+            // this guard is needed due to an interaction with `onRemoveThisAbility`
+            // and having multiple `expire` waiting to be called for the same ability
+            this.unit.removeEffect(this.group);
+        }
     };
 
     EffectHandler.prototype.mechanic = function () {};
@@ -848,8 +885,8 @@
             this.trigger("death", team._teamId, index);
         },
 
-        _onChange: function (unit, team, index) {
-            this.trigger("update", team._teamId, index, unit.toSimplifiedJSON());
+        _onChange: function (unit, team, index, attr) {
+            this.trigger("update", team._teamId, index, attr);
         },
 
         _onDamage: function (unit, amount, type) {
