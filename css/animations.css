@@ -720,11 +720,11 @@ https://cssanimation.rocks/principles/
 
 .animate-floating-text {
     animation-name: floatingtext;
-    animation-duration: 2s;
+    animation-duration: 1.5s;
     animation-fill-mode: forwards;
     animation-timing-function: ease-in-out;
     -webkit-animation-name: floatingtext;
-    -webkit-animation-duration: 2s;
+    -webkit-animation-duration: 1.5s;
     -webkit-animation-fill-mode: forwards;
     -webkit-animation-timing-function: ease-in-out;
 }

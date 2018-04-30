@@ -563,8 +563,14 @@ html, body {
 
 
 .notification {
-    position: relative;
-    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.notification > span {
     border-radius: 0.5em;
     background-color: #333;
     color: whitesmoke;
