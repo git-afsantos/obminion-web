@@ -23,21 +23,12 @@
     // its internal data and to the event data.
 
 
-    var BattleUnitView = views.AnimatedView.extend({
+    var BattleUnitView = Backbone.View.extend({
         initialize: function (options) {
             this.id = options.id;
-            views.AnimatedView.prototype.initialize.call(this);
             this.$img = this.$("img");
             this.$type = this.$(".indicator-type");
             this.$level = this.$(".indicator-level");
-            this.animations.fadeOut = this.animateFadeOut;
-            this.animations.fadeIn = this.animateFadeIn;
-            this.animations.death = this.animateDeath;
-            this.animations.attack = this.animateAttack;
-            this.animations.defend = this.animateDefend;
-            this.animations.ability = this.animateAbility;
-            this.animations.spawn = this.animateSpawn;
-            this.animations.reposition = this.animateReposition;
             this.listenTo(this.model, "change:level", this.renderLevel);
             this.listenTo(this.model, "change:type", this.renderType);
             this.listenTo(this.model, "change:portrait", this.renderPortrait);
@@ -66,19 +57,8 @@
         },
 
         spawn: function () {
-            this.pushAnimation("spawn");
-            return this;
-        },
-
-        animateSpawn: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.endAnimateSpawn;
             this.$img.show();
-            this.$img.addClass("animate-spawn");
-        },
-
-        endAnimateSpawn: function () {
-            this.$img.removeClass("animate-spawn");
+            return this;
         },
 
         switchUnit: function (model) {
@@ -87,108 +67,40 @@
             this.listenTo(model, "change:level", this.renderLevel);
             this.listenTo(model, "change:type", this.renderType);
             this.listenTo(model, "change:template", this.renderPortrait);
-            this.pushAnimation("fadeOut");
-            this.pushAnimation("fadeIn");
-            return this;
-        },
-
-        animateFadeOut: function () {
-            this.currentAnimation.counter = 1;
-            this.$img.addClass("invisible transition-opacity");
-        },
-
-        animateFadeIn: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.removeOpacityTransition;
-            this.$img.removeClass("invisible");
             this.renderPortrait();
-        },
-
-        removeOpacityTransition: function () {
-            this.$img.removeClass("transition-opacity");
+            return this;
         },
 
         killUnit: function () {
-            this.pushAnimation("death");
+            this.$img.addClass("invisible");
             return this;
-        },
-
-        animateDeath: function () {
-            this.currentAnimation.counter = 1;
-            this.$img.addClass("animate-death");
         },
 
         attack: function () {
-            this.pushAnimation("attack");
             return this;
-        },
-
-        animateAttack: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.endAnimateAttack;
-            this.$el.addClass("animate-attack");
-        },
-
-        endAnimateAttack: function () {
-            this.$el.removeClass("animate-attack");
         },
 
         defend: function () {
-            this.pushAnimation("defend");
             return this;
-        },
-
-        animateDefend: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.endAnimateDefend;
-            this.$el.addClass("animate-defend");
-        },
-
-        endAnimateDefend: function () {
-            this.$el.removeClass("animate-defend");
         },
 
         triggerAbility: function () {
-            this.pushAnimation("ability");
             return this;
-        },
-
-        animateAbility: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.endAnimateAbility;
-            this.$el.addClass("animate-ability");
-        },
-
-        endAnimateAbility: function () {
-            this.$el.removeClass("animate-ability");
         },
 
         reposition: function () {
-            this.pushAnimation("reposition");
             return this;
-        },
-
-        animateReposition: function () {
-            //this.currentAnimation.counter = 1;
-            //this.currentAnimation.callback = this.endAnimateReposition;
-            //this.$el.addClass("invisible transition-opacity");
-        },
-
-        endAnimateReposition: function () {
-            //this.$el.removeClass("invisible transition-opacity");
         }
     });
 
 
 
-    var NameplateView = views.AnimatedView.extend({
+    var NameplateView = Backbone.View.extend({
         initialize: function () {
             this.id = "nameplate";
-            views.AnimatedView.prototype.initialize.call(this);
             this.$name = this.$(".unit-name");
             this.$hpBar = this.$(".progress");
             this.$label = this.$(".progress-label");
-            this.animations.health = this.animateHealthBar;
         },
 
         setModel: function (model) {
@@ -198,7 +110,7 @@
             this.model = model;
             if (model != null) {
                 this.listenTo(model, "change:name", this.render);
-                this.listenTo(model, "change:health", this.onChangeHealth);
+                this.listenTo(model, "change:health", this.render);
                 this.listenTo(model, "change:maxHealth", this.render);
             }
             this.render();
@@ -217,42 +129,18 @@
                 this.$hpBar.width("0");
             }
             return this;
-        },
-
-        onChangeHealth: function () {
-            this.pushAnimation("health");
-        },
-
-        animateHealthBar: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.endAnimateHealthBar;
-            this.$hpBar.addClass("transition");
-            this.render();
-        },
-
-        endAnimateHealthBar: function () {
-            this.$hpBar.removeClass("transition");
         }
     });
 
 
 
-    var BattleTeamView = views.AnimatedView.extend({
+    var BattleTeamView = Backbone.View.extend({
         initialize: function (options) {
             this.id = options.id;
-            views.AnimatedView.prototype.initialize.call(this);
             this.portraits = [];
             this.$portraitWrapper = this.$(".portrait-wrapper");
             this.portraitHtml = $("#battle-unit-portrait").html().trim();
             this.nameplate = new NameplateView({ el: this.$(".nameplate") });
-            this.listenTo(this.nameplate, "animation:start", this.onChildAnimation);
-            this.listenTo(this.nameplate, "animation:end", this.onAnimationEnd);
-            this.animations.waitForChildren = this.waitForChildren;
-            this.animations.spawn = this.animateSpawn;
-            this.animations.death = this.animateKillUnit;
-            this.animations.reposition = this.animateReposition;
-            this.animations.rotation = this.animateRotation;
-            this.animations.health = this.animateHealth;
         },
 
         render: function () {
@@ -263,31 +151,12 @@
             return this;
         },
 
-        /*animate: function () {
-            // first start its own animation: trigger start and push sub-animations
-            views.AnimatedView.prototype.animate.call(this);
-            // then animate the children: increments own animation counter
-            for (var i = 0, len = this.portraits.length; i < len; ++i) {
-                this.portraits[i].animate();
-            }
-            this.nameplate.animate();
-            // if no children is animating, skip the animation
-            if (this.currentAnimation.counter === 0) {
-                this.fakeAnimation();
-            }
-            return this;
-        },*/
-
         reset: function () {
             for (var i = 0, len = this.portraits.length; i < len; ++i) {
                 this.stopListening(this.portraits[i]);
                 this.portraits[i].remove();
             }
             this.portraits = [];
-        },
-
-        onChildAnimation: function () {
-            ++this.currentAnimation.counter;
         },
 
         getModel: function (index) {
@@ -307,94 +176,51 @@
             this.$portraitWrapper.append($portrait);
             view = new BattleUnitView({ el: $portrait, model: model, id: this.id + "-" + this.portraits.length });
             this.portraits.push(view);
-            this.listenTo(view, "animation:start", this.onChildAnimation);
-            this.listenTo(view, "animation:end", this.onAnimationEnd);
-            view.render();
-            this.pushAnimation("spawn", view);
+            view.spawn().render();
             return this;
-        },
-
-        animateSpawn: function (portrait) {
-            portrait.spawn().animate();
         },
 
         killUnit: function (index) {
-            this.pushAnimation("death", index);
-            //this.pushAnimation("reposition", index);
-            return this;
-        },
-
-        animateKillUnit: function (index) {
-            this.currentAnimation.callback = this.endAnimateKillUnit;
-            this.portraits[index].killUnit().animate();
-        },
-
-        endAnimateKillUnit: function () {
-            var i = this.currentAnimation.arguments[0];
-            this.stopListening(this.portraits[i]);
-            this.portraits[i].remove();
-            this.portraits.splice(i, 1);
+            this.portraits[index].killUnit();
+            this.stopListening(this.portraits[index]);
+            this.portraits[index].remove();
+            this.portraits.splice(index, 1);
             if (this.portraits.length > 0) {
                 this.nameplate.setModel(this.portraits[0].model);
             } else {
                 this.nameplate.setModel(null);
             }
-        },
-
-        animateReposition: function (index) {
-            for (var i = 0; i < this.portraits.length; ++i) {
-                if (i !== index) {
-                    this.portraits[i].reposition().animate();
-                }
-            }
+            return this;
         },
 
         attack: function () {
             this.portraits[0].attack();
-            this.pushAnimation("waitForChildren", [this.portraits[0]]);
             return this;
         },
 
         defend: function () {
             this.portraits[0].defend();
-            this.pushAnimation("waitForChildren", [this.portraits[0]]);
             return this;
         },
 
         triggerAbility: function (i) {
             this.portraits[i].triggerAbility();
-            this.pushAnimation("waitForChildren", [this.portraits[i]]);
             return this;
         },
 
         damage: function (i, amount) {
-            if (i === 0) {
-                this.pushAnimation("health", -amount);
-            } else {
-                var u = this.portraits[i].model, h = u.get("health");
-                u.set("health", Math.max(0, h - amount));
-            }
+            var u = this.portraits[i].model,
+                h = u.get("health");
+            u.set("health", Math.max(0, h - amount));
             return this;
         },
 
         heal: function (i, amount) {
-            if (i === 0) {
-                this.pushAnimation("health", amount);
-            } else {
-                var u = this.portraits[i].model,
-                    m = u.get("maxHealth"),
-                    h = u.get("health");
-                u.set("health", Math.min(m, h + amount));
-            }
-            return this;
-        },
-
-        animateHealth: function (amount) {
-            var u = this.nameplate.model,
+            var u = this.portraits[i].model,
                 m = u.get("maxHealth"),
                 h = u.get("health");
-            u.set("health", Math.max(0, Math.min(m, h + amount)));
-            this.nameplate.animate();
+            u.set("health", Math.min(m, h + amount));
+            return this;
         },
 
         rotateClockwise: function () {
@@ -402,10 +228,10 @@
                 previous = this.portraits[len - 1].model;
             for (; i < len; ++i) {
                 m = this.portraits[i].model;
-                this.portraits[i].switchUnit(previous);
+                this.portraits[i].switchUnit(previous).render();
                 previous = m;
             }
-            this.pushAnimation("rotation");
+            this.nameplate.setModel(this.portraits[0].model);
             return this;
         },
 
@@ -414,26 +240,11 @@
                 previous = this.portraits[0].model;
             for (; i >= 0; --i) {
                 m = this.portraits[i].model;
-                this.portraits[i].switchUnit(previous);
+                this.portraits[i].switchUnit(previous).render();
                 previous = m;
             }
-            this.pushAnimation("rotation");
-            return this;
-        },
-
-        animateRotation: function () {
-            for (var i = 0, len = this.portraits.length; i < len; ++i) {
-                this.portraits[i].animate();
-            }
             this.nameplate.setModel(this.portraits[0].model);
-        },
-
-        waitForChildren: function (children) {
-            // Counter is incremented by the child animation starting.
-            // There is no callback, just wait for child animation to end.
-            for (var i = 0, len = children.length; i < len; ++i) {
-                children[i].animate();
-            }
+            return this;
         }
     });
 
@@ -451,7 +262,6 @@
             _.bindAll(this, "animate", "nextStep", "leave");
             this.router = options.router;
             this.state = options.state;
-            this.animating = 0;
             this.currentEvent = null;
             this.eventQueue = [];
             this.teams = [
@@ -460,15 +270,7 @@
             ];
             this.actionBar = new BattleActionBar({ el: this.$("#battle-action-bar") });
             this.notifications = new BattleNotifications({ el: this.$("#battle-notification-panel") });
-            this.listenTo(this.teams[0], "animation:start", this.onAnimation);
-            this.listenTo(this.teams[0], "animation:end", this.onAnimationEnd);
-            this.listenTo(this.teams[1], "animation:start", this.onAnimation);
-            this.listenTo(this.teams[1], "animation:end", this.onAnimationEnd);
-            this.listenTo(this.actionBar, "animation:start", this.onAnimation);
-            this.listenTo(this.actionBar, "animation:end", this.onAnimationEnd);
             this.listenTo(this.actionBar, "select:action", this.onSelectAction);
-            this.listenTo(this.notifications, "animation:start", this.onAnimation);
-            this.listenTo(this.notifications, "animation:end", this.onAnimationEnd);
             this.listenTo(this.model, "battle:start", this.onBattleStart);
             this.listenTo(this.model, "battle:attack", this.onBattleAttack);
             this.listenTo(this.model, "battle:between_rounds", this.onBattleBetweenRounds);
@@ -512,26 +314,13 @@
             if (this.currentEvent == null) {
                 this.currentEvent = this.eventQueue.shift();
                 if (this.currentEvent != null) {
+                    //this.notifications.clearNotifications();
                     this.currentEvent.animationFunction.call(this);
-                    if (this.animating === 0) {
-                        this.currentEvent = null;
-                        window.setTimeout(this.animate, 0);
-                    }
+                    this.currentEvent = null;
+                    window.setTimeout(this.animate, 2000);
                 }
             }
             return this;
-        },
-
-        onAnimation: function () {
-            ++this.animating;
-        },
-
-        onAnimationEnd: function () {
-            --this.animating;
-            if (this.animating === 0) {
-                this.currentEvent = null;
-                window.setTimeout(this.animate, 0);
-            }
         },
 
         onSelectAction: function () {
@@ -555,9 +344,9 @@
 
         animateBattleStart: function () {
             for (var i = 0, len = this.teams.length; i < len; ++i) {
-                this.teams[i].setTeam(this.currentEvent.teams[i])
-                    .render()
-                    .animate();
+                this.teams[i]
+                    .setTeam(this.currentEvent.teams[i])
+                    .render();
             }
         },
 
@@ -598,8 +387,11 @@
         },
 
         animateAttack: function () {
-            this.teams[this.currentEvent.attacker].attack().animate();
-            this.teams[this.currentEvent.defender].defend().animate();
+            var team = this.currentEvent.attacker,
+                model = this.teams[team].getModel(0);
+            this.teams[this.currentEvent.attacker].attack();
+            this.teams[this.currentEvent.defender].defend();
+            this.notifications.notifyAttack(team, model);
         },
 
         onAbility: function (teamIndex, unitIndex, abilityName) {
@@ -616,8 +408,8 @@
                 unit = this.currentEvent.unit,
                 model = this.teams[team].getModel(unit),
                 ability = this.currentEvent.ability;
-            this.teams[team].triggerAbility(unit, ability).animate();
-            this.notifications.notifyAbility(team, model, ability).animate();
+            this.teams[team].triggerAbility(unit, ability);
+            this.notifications.notifyAbility(team, model, ability);
         },
 
         onEffect: function (teamIndex, unitIndex, effectName) {
@@ -634,8 +426,8 @@
                 unit = this.currentEvent.unit,
                 model = this.teams[team].getModel(unit),
                 effect = this.currentEvent.effect;
-            this.teams[team].triggerAbility(unit, effect).animate();
-            this.notifications.notifyEffect(team, model, effect).animate();
+            this.teams[team].triggerAbility(unit, effect);
+            this.notifications.notifyEffect(team, model, effect);
         },
 
         onDeath: function (teamIndex, unitIndex) {
@@ -650,8 +442,8 @@
             var team = this.currentEvent.team,
                 unit = this.currentEvent.unit,
                 model = this.teams[team].getModel(unit);
-            this.teams[team].killUnit(unit).animate();
-            this.notifications.notifyDeath(team, model).animate();
+            this.teams[team].killUnit(unit);
+            this.notifications.notifyDeath(team, model);
         },
 
         onUnitUpdate: function (teamIndex, unitIndex, attributes) {
@@ -668,10 +460,6 @@
                 unit = this.currentEvent.unit,
                 model = this.teams[team].getModel(unit),
                 attr = this.currentEvent.attributes;
-            // TODO fix this hack
-            if (attr.health != null) {
-                model.set({health: attr.health}, {silent: true});
-            }
             model.set(this.currentEvent.attributes);
         },
 
@@ -683,8 +471,8 @@
         },
 
         animateRotateClockwise: function () {
-            this.teams[this.currentEvent.team].rotateClockwise().animate();
-            this.notifications.notifyRotation(this.currentEvent.team, true).animate();
+            this.teams[this.currentEvent.team].rotateClockwise();
+            this.notifications.notifyRotation(this.currentEvent.team, true);
         },
 
         onRotateCounterClockwise: function (teamIndex) {
@@ -695,8 +483,8 @@
         },
 
         animateRotateCounterClockwise: function () {
-            this.teams[this.currentEvent.team].rotateCounterClockwise().animate();
-            this.notifications.notifyRotation(this.currentEvent.team, false).animate();
+            this.teams[this.currentEvent.team].rotateCounterClockwise();
+            this.notifications.notifyRotation(this.currentEvent.team, false);
         },
 
         onDamage: function (teamIndex, unitIndex, amount, type) {
@@ -715,8 +503,8 @@
                 model = this.teams[team].getModel(unit),
                 amount = this.currentEvent.amount,
                 type = this.currentEvent.type;
-            this.teams[team].damage(unit, amount, type).animate();
-            this.notifications.notifyDamage(team, model, amount, type).animate();
+            this.teams[team].damage(unit, amount, type);
+            this.notifications.notifyDamage(team, model, amount, type);
         },
 
         onHeal: function (teamIndex, unitIndex, amount, type) {
@@ -735,8 +523,8 @@
                 model = this.teams[team].getModel(unit),
                 amount = this.currentEvent.amount,
                 type = this.currentEvent.type;
-            this.teams[team].heal(unit, amount, type).animate();
-            this.notifications.notifyHeal(team, model, amount, type).animate();
+            this.teams[team].heal(unit, amount, type);
+            this.notifications.notifyHeal(team, model, amount, type);
         },
 
         onRequestAction: function () {
@@ -856,19 +644,44 @@
     });
 
 
-    var BattleNotifications = views.AnimatedView.extend({
+    var BattleNotifications = Backbone.View.extend({
+        events: {
+            "animationend": "onAnimationEnd"
+        },
+
         initialize: function () {
             this.id = "notifications";
-            views.AnimatedView.prototype.initialize.call(this);
             this.msgs = [];
-            this.animations.show = this.animateShowNotification;
-            this.animations.showAll = this.animateShowNotifications;
+        },
+
+        onAnimationEnd: function() {
+            this.$el.children().first().remove();
         },
 
         showNotification: function (msg) {
-            this.msgs.push(msg);
-            this.pushAnimation("show");
+            this.$el.append($('<p class="notification animate-floating-text"><span>'
+                              + msg + "</span></p>"));
             return this;
+        },
+
+        showAllNotifications: function () {
+            var i = 0, len = this.msgs.length;
+            for (; i < len; ++i) {
+                this.$el.append($('<p class="notification animate-floating-text"><span>'
+                                  + this.msgs[i] + "</span></p>"));
+            }
+            this.msgs = [];
+            return this;
+        },
+
+        clearNotifications: function () {
+            this.$el.empty();
+            return this;
+        },
+
+        notifyAttack: function (teamIndex, model) {
+            return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
+                                         + model.get("name") + " attacks!");
         },
 
         notifyAbility: function (teamIndex, model, abilityName) {
@@ -906,28 +719,6 @@
             return this.showNotification((teamIndex === 0 ? "" : "Enemy ")
                                          + model.get("name") + " recovers "
                                          + amount + " health.");
-        },
-
-        animateShowNotification: function () {
-            this.currentAnimation.counter = 1;
-            this.currentAnimation.callback = this.endAnimateShowNotifications;
-            this.$el.append($('<p class="notification animate-floating-text">'
-                              + this.msgs.shift() + "</p>"));
-        },
-
-        animateShowNotifications: function () {
-            var i = 0, len = this.msgs.length;
-            this.currentAnimation.counter = len;
-            this.currentAnimation.callback = this.endAnimateShowNotifications;
-            for (; i < len; ++i) {
-                this.$el.append($('<p class="notification animate-floating-text">'
-                                  + this.msgs[i] + "</p>"));
-            }
-            this.msgs = [];
-        },
-
-        endAnimateShowNotifications: function () {
-            this.$el.empty();
         }
     });
 })();
